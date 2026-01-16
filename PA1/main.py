@@ -4,13 +4,14 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 from sklearn.feature_extraction.text import CountVectorizer
-from sentiment_data import read_sentiment_examples
+from sentiment_data import read_sentiment_examples, read_word_embeddings
 from torch.utils.data import Dataset, DataLoader
 import time
 import argparse
 import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader
 from BOWmodels import SentimentDatasetBOW, NN2BOW, NN3BOW
+from DANmodels import DAN
 
 
 # Training function
@@ -123,7 +124,7 @@ def main():
         plt.grid()
 
         # Save the training accuracy figure
-        training_accuracy_file = 'train_accuracy.png'
+        training_accuracy_file = 'bow_train_accuracy.png'
         plt.savefig(training_accuracy_file)
         print(f"\n\nTraining accuracy plot saved as {training_accuracy_file}")
 
@@ -138,15 +139,51 @@ def main():
         plt.grid()
 
         # Save the testing accuracy figure
-        testing_accuracy_file = 'dev_accuracy.png'
+        testing_accuracy_file = 'bow_dev_accuracy.png'
         plt.savefig(testing_accuracy_file)
         print(f"Dev accuracy plot saved as {testing_accuracy_file}\n\n")
 
-        # plt.show()
+        plt.show()
 
     elif args.model == "DAN":
         #TODO:  Train and evaluate your DAN
-        print("DAN model not implemented yet")
+        start_time = time.time()
+
+        embeddings_50d = read_word_embeddings("data/glove.6B.50d-relativized.txt")
+        embeddings_300d = read_word_embeddings("data/glove.6B.300d-relativized.txt")
+
+        print('\nDAN:')
+        dan_train_accuracy, dan_test_accuracy = experiment(DAN(input_size=512, hidden_size=100, embeddings=embeddings_50d), train_loader, test_loader)
+
+        # Plot the training accuracy
+        plt.figure(figsize=(8, 6))
+        plt.plot(dan_train_accuracy)
+        plt.xlabel('Epochs')
+        plt.ylabel('Training Accuracy')
+        plt.title('Training Accuracy for DAN')
+        plt.legend()
+        plt.grid()
+
+        # Save the training accuracy figure
+        training_accuracy_file = 'dan_train_accuracy.png'
+        plt.savefig(training_accuracy_file)
+        print(f"\n\nTraining accuracy plot saved as {training_accuracy_file}")
+
+        # Plot the testing accuracy
+        plt.figure(figsize=(8, 6))
+        plt.plot(dan_test_accuracy)
+        plt.xlabel('Epochs')
+        plt.ylabel('Dev Accuracy')
+        plt.title('Dev Accuracy for DAN')
+        plt.legend()
+        plt.grid()
+
+        # Save the testing accuracy figure
+        testing_accuracy_file = 'dan_dev_accuracy.png'
+        plt.savefig(testing_accuracy_file)
+        print(f"Dev accuracy plot saved as {testing_accuracy_file}\n\n")
+
+        plt.show()
 
 if __name__ == "__main__":
     main()
