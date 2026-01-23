@@ -11,7 +11,7 @@ import argparse
 import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader
 from BOWmodels import SentimentDatasetBOW, NN2BOW, NN3BOW
-from DANmodels import DAN
+from DANmodels import DAN, SentimentDatasetDAN
 
 
 # Training function
@@ -21,7 +21,8 @@ def train_epoch(data_loader, model, loss_fn, optimizer):
     model.train()
     train_loss, correct = 0, 0
     for batch, (X, y) in enumerate(data_loader):
-        X = X.float()
+        if type(model) != DAN:
+            X = X.float()
 
         # Compute prediction error
         pred = model(X)
@@ -47,7 +48,8 @@ def eval_epoch(data_loader, model, loss_fn, optimizer):
     eval_loss = 0
     correct = 0
     for batch, (X, y) in enumerate(data_loader):
-        X = X.float()
+        if type(model) != DAN:
+            X = X.float()
 
         # Compute prediction error
         pred = model(X)
@@ -92,8 +94,15 @@ def main():
     # Load dataset
     start_time = time.time()
 
-    train_data = SentimentDatasetBOW("data/train.txt")
-    dev_data = SentimentDatasetBOW("data/dev.txt", vectorizer=train_data.vectorizer, train=False)
+    embeddings_50d = read_word_embeddings("data/glove.6B.50d-relativized.txt")
+    embeddings_300d = read_word_embeddings("data/glove.6B.300d-relativized.txt")
+
+    if args.model == "BOW":
+        train_data = SentimentDatasetBOW("data/train.txt")
+        dev_data = SentimentDatasetBOW("data/dev.txt", vectorizer=train_data.vectorizer, train=False)
+    elif args.model == "DAN":
+        train_data = SentimentDatasetDAN("data/train.txt", embeddings_50d)
+        dev_data = SentimentDatasetDAN("data/dev.txt", embeddings_50d)
     train_loader = DataLoader(train_data, batch_size=16, shuffle=True)
     test_loader = DataLoader(dev_data, batch_size=16, shuffle=False)
 
@@ -149,11 +158,8 @@ def main():
         #TODO:  Train and evaluate your DAN
         start_time = time.time()
 
-        embeddings_50d = read_word_embeddings("data/glove.6B.50d-relativized.txt")
-        embeddings_300d = read_word_embeddings("data/glove.6B.300d-relativized.txt")
-
         print('\nDAN:')
-        dan_train_accuracy, dan_test_accuracy = experiment(DAN(input_size=512, hidden_size=100, embeddings=embeddings_50d), train_loader, test_loader)
+        dan_train_accuracy, dan_test_accuracy = experiment(DAN(hidden_size=100, embeddings=embeddings_50d), train_loader, test_loader)
 
         # Plot the training accuracy
         plt.figure(figsize=(8, 6))
