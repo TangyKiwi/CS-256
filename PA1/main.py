@@ -13,6 +13,8 @@ from torch.utils.data import DataLoader
 from BOWmodels import SentimentDatasetBOW, NN2BOW, NN3BOW
 from DANmodels import DAN, DAN_collate_fn, SentimentDatasetDAN
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 # Training function
 def train_epoch(data_loader, model, loss_fn, optimizer):
     size = len(data_loader.dataset)
@@ -23,6 +25,9 @@ def train_epoch(data_loader, model, loss_fn, optimizer):
         if type(model) != DAN:
             X = X.float()
 
+        X = X.to(device)
+        y = y.to(device)    
+        
         # Compute prediction error
         pred = model(X)
         loss = loss_fn(pred, y)
@@ -49,6 +54,9 @@ def eval_epoch(data_loader, model, loss_fn, optimizer):
     for batch, (X, y) in enumerate(data_loader):
         if type(model) != DAN:
             X = X.float()
+
+        X = X.to(device)
+        y = y.to(device)
 
         # Compute prediction error
         pred = model(X)
@@ -102,7 +110,7 @@ def main():
         dev_data = SentimentDatasetBOW("data/dev.txt", vectorizer=train_data.vectorizer, train=False)
         train_loader = DataLoader(train_data, batch_size=16, shuffle=True)
         test_loader = DataLoader(dev_data, batch_size=16, shuffle=False)
-    elif args.model == "DAN":
+    elif args.model == "DAN" or args.model == "DAN_random":
         train_data = SentimentDatasetDAN("data/train.txt", embeddings)
         dev_data = SentimentDatasetDAN("data/dev.txt", embeddings)
         train_loader = DataLoader(train_data, batch_size=16, shuffle=True, collate_fn=DAN_collate_fn)
@@ -118,12 +126,13 @@ def main():
         # Train and evaluate NN2
         start_time = time.time()
         print('\n2 layers:')
-        nn2_train_accuracy, nn2_test_accuracy = experiment(NN2BOW(input_size=512, hidden_size=100), train_loader, test_loader)
+        model = NN2BOW(input_size=512, hidden_size=100).to(device)
+        nn2_train_accuracy, nn2_test_accuracy = experiment(model, train_loader, test_loader)
 
         # Train and evaluate NN3
         print('\n3 layers:')
-        nn3_train_accuracy, nn3_test_accuracy = experiment(NN3BOW(input_size=512, hidden_size=100), train_loader, test_loader)
-
+        model = NN3BOW(input_size=512, hidden_size=100).to(device)
+        nn3_train_accuracy, nn3_test_accuracy = experiment(model, train_loader, test_loader)
         # Plot the training accuracy
         plt.figure(figsize=(8, 6))
         plt.plot(nn2_train_accuracy, label='2 layers')
@@ -156,12 +165,18 @@ def main():
 
         plt.show()
 
-    elif args.model == "DAN":
+    elif args.model == "DAN" or args.model == "DAN_random":
         #TODO:  Train and evaluate your DAN
         start_time = time.time()
 
-        print('\nDAN:')
-        dan_train_accuracy, dan_test_accuracy = experiment(DAN(hidden_size=100, embeddings=embeddings), train_loader, test_loader)
+        if args.model == "DAN":
+            print('\nDAN:')
+        else:
+            print('\nDAN with Random Embeddings:')
+        model = DAN(hidden_size=100, embeddings=embeddings).to(device)
+        if args.model == "DAN_random":
+            model = DAN(hidden_size=100, embeddings=embeddings, GloVe=False).to(device)
+        dan_train_accuracy, dan_test_accuracy = experiment(model, train_loader, test_loader)
 
         # Plot the training accuracy
         plt.figure(figsize=(8, 6))
@@ -173,6 +188,8 @@ def main():
 
         # Save the training accuracy figure
         training_accuracy_file = 'dan_train_accuracy.png'
+        if args.model == "DAN_random":
+            training_accuracy_file = 'dan_random_train_accuracy.png'
         plt.savefig(training_accuracy_file)
         print(f"\n\nTraining accuracy plot saved as {training_accuracy_file}")
 
@@ -186,6 +203,8 @@ def main():
 
         # Save the testing accuracy figure
         testing_accuracy_file = 'dan_dev_accuracy.png'
+        if args.model == "DAN_random":
+            testing_accuracy_file = 'dan_random_dev_accuracy.png'
         plt.savefig(testing_accuracy_file)
         print(f"Dev accuracy plot saved as {testing_accuracy_file}\n\n")
 

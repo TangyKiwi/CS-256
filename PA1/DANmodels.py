@@ -45,10 +45,17 @@ def DAN_collate_fn(batch):
     return X, y
 
 class DAN(nn.Module):
-    def __init__(self, hidden_size: int, embeddings: WordEmbeddings):
+    def __init__(self, hidden_size: int, embeddings: WordEmbeddings, GloVe: bool=True):
         super().__init__()
         self.embeddings = embeddings.get_initialized_embedding_layer()
         self.embedding_dim = embeddings.get_embedding_length()
+
+        if not GloVe:
+            self.embeddings = nn.Embedding(
+                num_embeddings=len(embeddings.word_indexer),
+                embedding_dim=self.embedding_dim,
+                padding_idx=0
+            )
 
         self.fc1 = nn.Linear(self.embedding_dim, hidden_size)
         self.fc2 = nn.Linear(hidden_size, 2)
