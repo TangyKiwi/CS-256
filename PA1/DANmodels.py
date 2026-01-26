@@ -7,7 +7,6 @@ from torch.utils.data import Dataset
 
 class SentimentDatasetDAN(Dataset):
     def __init__(self, infile, embeddings: WordEmbeddings):
-        # Read the sentiment examples from the input file
         self.examples = read_sentiment_examples(infile)
         self.word_indexer = embeddings.word_indexer
 
@@ -23,8 +22,27 @@ class SentimentDatasetDAN(Dataset):
                    for word in example.words
                 ]
         
-        # add PAD handling logic 
         return torch.LongTensor(indices), example.label
+
+def DAN_collate_fn(batch):
+    sentences, labels = zip(*batch)
+
+    lengths = [len(s) for s in sentences]
+    max_len = max(lengths)
+
+    padded_sentences = []
+    for s in sentences:
+        pad_len = max_len - len(s)
+        padded = torch.cat([
+            s,
+            torch.zeros(pad_len, dtype=torch.long)  # PAD = 0
+        ])
+        padded_sentences.append(padded)
+
+    X = torch.stack(padded_sentences)
+    y = torch.tensor(labels)
+
+    return X, y
 
 class DAN(nn.Module):
     def __init__(self, hidden_size: int, embeddings: WordEmbeddings):
@@ -37,13 +55,14 @@ class DAN(nn.Module):
         self.log_softmax = nn.LogSoftmax(dim=1)
     
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        # x is a list of word indices
-
-        # need to adjust average calculation to account for PAD token?
         embedded_sentences = self.embeddings(x)
-        sentence_embeddings = embedded_sentences.mean(dim=1)  # Shape: (batch_size, embedding_dim)
 
-        x = F.relu(self.fc1(sentence_embeddings))  # Shape: (batch_size, hidden_dim)
-        x = self.fc2(x)  # Shape: (batch_size, 2)
-        x = self.log_softmax(x)  # Shape: (batch_size, 2)
+        mask = (x != 0).unsqueeze(-1)
+        masked_embeddings = embedded_sentences * mask
+        sum_embeddings = masked_embeddings.sum(dim=1)
+        sentence_embeddings = sum_embeddings / mask.sum(dim=1).clamp(min=1)
+
+        x = F.relu(self.fc1(sentence_embeddings))
+        x = self.fc2(x)
+        x = self.log_softmax(x)
         return x

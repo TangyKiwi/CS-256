@@ -11,8 +11,7 @@ import argparse
 import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader
 from BOWmodels import SentimentDatasetBOW, NN2BOW, NN3BOW
-from DANmodels import DAN, SentimentDatasetDAN
-
+from DANmodels import DAN, DAN_collate_fn, SentimentDatasetDAN
 
 # Training function
 def train_epoch(data_loader, model, loss_fn, optimizer):
@@ -96,15 +95,18 @@ def main():
 
     embeddings_50d = read_word_embeddings("data/glove.6B.50d-relativized.txt")
     embeddings_300d = read_word_embeddings("data/glove.6B.300d-relativized.txt")
+    embeddings = embeddings_300d
 
     if args.model == "BOW":
         train_data = SentimentDatasetBOW("data/train.txt")
         dev_data = SentimentDatasetBOW("data/dev.txt", vectorizer=train_data.vectorizer, train=False)
+        train_loader = DataLoader(train_data, batch_size=16, shuffle=True)
+        test_loader = DataLoader(dev_data, batch_size=16, shuffle=False)
     elif args.model == "DAN":
-        train_data = SentimentDatasetDAN("data/train.txt", embeddings_50d)
-        dev_data = SentimentDatasetDAN("data/dev.txt", embeddings_50d)
-    train_loader = DataLoader(train_data, batch_size=16, shuffle=True)
-    test_loader = DataLoader(dev_data, batch_size=16, shuffle=False)
+        train_data = SentimentDatasetDAN("data/train.txt", embeddings)
+        dev_data = SentimentDatasetDAN("data/dev.txt", embeddings)
+        train_loader = DataLoader(train_data, batch_size=16, shuffle=True, collate_fn=DAN_collate_fn)
+        test_loader = DataLoader(dev_data, batch_size=16, shuffle=False, collate_fn=DAN_collate_fn)
 
     end_time = time.time()
     elapsed_time = end_time - start_time
@@ -159,7 +161,7 @@ def main():
         start_time = time.time()
 
         print('\nDAN:')
-        dan_train_accuracy, dan_test_accuracy = experiment(DAN(hidden_size=100, embeddings=embeddings_50d), train_loader, test_loader)
+        dan_train_accuracy, dan_test_accuracy = experiment(DAN(hidden_size=100, embeddings=embeddings), train_loader, test_loader)
 
         # Plot the training accuracy
         plt.figure(figsize=(8, 6))
@@ -167,7 +169,6 @@ def main():
         plt.xlabel('Epochs')
         plt.ylabel('Training Accuracy')
         plt.title('Training Accuracy for DAN')
-        plt.legend()
         plt.grid()
 
         # Save the training accuracy figure
@@ -181,7 +182,6 @@ def main():
         plt.xlabel('Epochs')
         plt.ylabel('Dev Accuracy')
         plt.title('Dev Accuracy for DAN')
-        plt.legend()
         plt.grid()
 
         # Save the testing accuracy figure
