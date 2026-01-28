@@ -11,7 +11,8 @@ import argparse
 import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader
 from BOWmodels import SentimentDatasetBOW, NN2BOW, NN3BOW
-from DANmodels import DAN, DAN_collate_fn, SentimentDatasetDAN
+from DANmodels import DAN, DAN_collate_fn, SentimentDatasetDAN, SentimentDatasetDANBPE, DANBPE
+from bpe import BPETokenizer
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -22,7 +23,7 @@ def train_epoch(data_loader, model, loss_fn, optimizer):
     model.train()
     train_loss, correct = 0, 0
     for batch, (X, y) in enumerate(data_loader):
-        if type(model) != DAN:
+        if type(model) in [NN2BOW, NN3BOW]:
             X = X.float()
 
         X = X.to(device)
@@ -52,7 +53,7 @@ def eval_epoch(data_loader, model, loss_fn, optimizer):
     eval_loss = 0
     correct = 0
     for batch, (X, y) in enumerate(data_loader):
-        if type(model) != DAN:
+        if type(model) in [NN2BOW, NN3BOW]:
             X = X.float()
 
         X = X.to(device)
@@ -93,7 +94,7 @@ def main():
 
     # Set up argument parser
     parser = argparse.ArgumentParser(description='Run model training based on specified model type')
-    parser.add_argument('--model', type=str, required=True, help='Model type to train (e.g., BOW)')
+    parser.add_argument('--model', type=str, required=True, help='Model type to train (BOW, DAN, DAN_random, DANBPE)')
 
     # Parse the command-line arguments
     args = parser.parse_args()
@@ -101,18 +102,29 @@ def main():
     # Load dataset
     start_time = time.time()
 
-    embeddings_50d = read_word_embeddings("data/glove.6B.50d-relativized.txt")
-    embeddings_300d = read_word_embeddings("data/glove.6B.300d-relativized.txt")
-    embeddings = embeddings_300d
-
     if args.model == "BOW":
         train_data = SentimentDatasetBOW("data/train.txt")
         dev_data = SentimentDatasetBOW("data/dev.txt", vectorizer=train_data.vectorizer, train=False)
         train_loader = DataLoader(train_data, batch_size=16, shuffle=True)
         test_loader = DataLoader(dev_data, batch_size=16, shuffle=False)
     elif args.model == "DAN" or args.model == "DAN_random":
+        embeddings_50d = read_word_embeddings("data/glove.6B.50d-relativized.txt")
+        embeddings_300d = read_word_embeddings("data/glove.6B.300d-relativized.txt")
+        embeddings = embeddings_300d
         train_data = SentimentDatasetDAN("data/train.txt", embeddings)
         dev_data = SentimentDatasetDAN("data/dev.txt", embeddings)
+        train_loader = DataLoader(train_data, batch_size=16, shuffle=True, collate_fn=DAN_collate_fn)
+        test_loader = DataLoader(dev_data, batch_size=16, shuffle=False, collate_fn=DAN_collate_fn)
+    elif args.model == "DANBPE":
+        with open("data/train.txt", 'r', encoding='utf-8') as f:
+            train_text = f.read()
+        bpe_tokenizer = BPETokenizer()
+        print("Training BPE tokenizer...")
+        bpe_tokenizer.train(train_text, vocab_size=5000, verbose=False)
+        print(f"BPE tokenizer trained in : {time.time() - start_time} seconds")
+        start_time = time.time()
+        train_data = SentimentDatasetDANBPE("data/train.txt", bpe_tokenizer)
+        dev_data = SentimentDatasetDANBPE("data/dev.txt", bpe_tokenizer)
         train_loader = DataLoader(train_data, batch_size=16, shuffle=True, collate_fn=DAN_collate_fn)
         test_loader = DataLoader(dev_data, batch_size=16, shuffle=False, collate_fn=DAN_collate_fn)
 
@@ -205,6 +217,41 @@ def main():
         testing_accuracy_file = 'dan_dev_accuracy.png'
         if args.model == "DAN_random":
             testing_accuracy_file = 'dan_random_dev_accuracy.png'
+        plt.savefig(testing_accuracy_file)
+        print(f"Dev accuracy plot saved as {testing_accuracy_file}\n\n")
+
+        plt.show()
+
+    elif args.model == "DANBPE":
+        start_time = time.time()
+
+        print('\nDAN with BPE Embeddings:')
+        model = DANBPE(hidden_size=100, vocab_size=len(bpe_tokenizer.vocab), embedding_dim=100).to(device)
+        dan_train_accuracy, dan_test_accuracy = experiment(model, train_loader, test_loader)
+
+        # Plot the training accuracy
+        plt.figure(figsize=(8, 6))
+        plt.plot(dan_train_accuracy)
+        plt.xlabel('Epochs')
+        plt.ylabel('Training Accuracy')
+        plt.title('Training Accuracy for DAN w/ BPE')
+        plt.grid()
+
+        # Save the training accuracy figure
+        training_accuracy_file = 'dan_bpe_train_accuracy.png'
+        plt.savefig(training_accuracy_file)
+        print(f"\n\nTraining accuracy plot saved as {training_accuracy_file}")
+
+        # Plot the testing accuracy
+        plt.figure(figsize=(8, 6))
+        plt.plot(dan_test_accuracy)
+        plt.xlabel('Epochs')
+        plt.ylabel('Dev Accuracy')
+        plt.title('Dev Accuracy for DAN w/ BPE')
+        plt.grid()
+
+        # Save the testing accuracy figure
+        testing_accuracy_file = 'dan_bpe_dev_accuracy.png'
         plt.savefig(testing_accuracy_file)
         print(f"Dev accuracy plot saved as {testing_accuracy_file}\n\n")
 

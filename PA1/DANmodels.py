@@ -23,6 +23,19 @@ class SentimentDatasetDAN(Dataset):
                 ]
         
         return torch.LongTensor(indices), example.label
+    
+class SentimentDatasetDANBPE(Dataset):
+    def __init__(self, infile, bpe_tokenizer):
+        self.examples = read_sentiment_examples(infile)
+        self.bpe_tokenizer = bpe_tokenizer
+
+    def __len__(self):
+        return len(self.examples)
+    
+    def __getitem__(self, idx):
+        example = self.examples[idx]
+        token_ids = self.bpe_tokenizer.encode(" ".join(example.words))
+        return torch.LongTensor(token_ids), example.label
 
 def DAN_collate_fn(batch):
     sentences, labels = zip(*batch)
@@ -56,6 +69,33 @@ class DAN(nn.Module):
                 embedding_dim=self.embedding_dim,
                 padding_idx=0
             )
+
+        self.fc1 = nn.Linear(self.embedding_dim, hidden_size)
+        self.fc2 = nn.Linear(hidden_size, 2)
+        self.log_softmax = nn.LogSoftmax(dim=1)
+    
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        embedded_sentences = self.embeddings(x)
+
+        mask = (x != 0).unsqueeze(-1)
+        masked_embeddings = embedded_sentences * mask
+        sum_embeddings = masked_embeddings.sum(dim=1)
+        sentence_embeddings = sum_embeddings / mask.sum(dim=1).clamp(min=1)
+
+        x = F.relu(self.fc1(sentence_embeddings))
+        x = self.fc2(x)
+        x = self.log_softmax(x)
+        return x
+    
+class DANBPE(nn.Module):
+    def __init__(self, hidden_size: int, vocab_size: int, embedding_dim: int=100):
+        super().__init__()
+        self.embedding_dim = embedding_dim
+        self.embeddings = nn.Embedding(
+            num_embeddings=vocab_size,
+            embedding_dim=embedding_dim,
+            padding_idx=0
+        )
 
         self.fc1 = nn.Linear(self.embedding_dim, hidden_size)
         self.fc2 = nn.Linear(hidden_size, 2)
