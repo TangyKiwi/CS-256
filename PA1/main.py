@@ -15,6 +15,7 @@ from DANmodels import DAN, DAN_collate_fn, SentimentDatasetDAN, SentimentDataset
 from bpe import BPETokenizer
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print(f"Using device: {device}")
 
 # Training function
 def train_epoch(data_loader, model, loss_fn, optimizer):
