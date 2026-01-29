@@ -28,14 +28,18 @@ class SentimentDatasetDANBPE(Dataset):
     def __init__(self, infile, bpe_tokenizer):
         self.examples = read_sentiment_examples(infile)
         self.bpe_tokenizer = bpe_tokenizer
+        self.encoded = [
+            torch.LongTensor(
+                bpe_tokenizer.encode(" ".join(example.words))
+            )
+            for example in self.examples
+        ]
 
     def __len__(self):
         return len(self.examples)
     
     def __getitem__(self, idx):
-        example = self.examples[idx]
-        token_ids = self.bpe_tokenizer.encode(" ".join(example.words))
-        return torch.LongTensor(token_ids), example.label
+        return self.encoded[idx], self.examples[idx].label
 
 def DAN_collate_fn(batch):
     sentences, labels = zip(*batch)
