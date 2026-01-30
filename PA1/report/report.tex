@@ -9,6 +9,8 @@
 \usepackage{amssymb}
 \usepackage{enumerate}
 \usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{float}
 
 \title{PA1 Report}
 \author{Kevin Lin}
@@ -19,8 +21,85 @@
 \maketitle
 
 \section*{Part 1: DAN}
+We implement the DAN as discussed in Iyyer et al. in \verb|DANmodels.py|. The model
+follows a similar architecture as given in \verb|BOWmodels.py|, with the addition
+of an averaging layer of the embeddings before passing to the feedforward layers 
+to effectively make it a deep averaging network. The primary difference lies in
+the dataset construction for the DAN model. This is handled by the \verb|SentimentDatasetDAN| 
+class implemented in \verb|DANmodels.py|, which rather converts each sentence into
+a float vector of word embeddings like \verb|SentimentDatasetBOW|, uses the given
+\verb|WordEmbeddings| indexer class to convert words in each sentence to indices
+used in training. Unknown words are consequently given a special \verb|<UNK>| token
+with index 1, while additional padding tokens \verb|<PAD>| with index 0 are added
+to ensure uniform length across all sentences in a batch (\verb|DAN_collate_fn| function,
+called during data loading). These are then passed to the DAN model. The averaging 
+layer in the DAN model averages the embeddings of all words in the sentence, excluding 
+any padding tokens to not skew the average. Training and dev accuracy testing utilize 
+the same optimizer and loss function as the BOW models (Adam, NLL loss), and the 
+training loop is similar as well (100 epochs, batch size 16, lr 0.0001).  
+
+\vspace{1em}
+
+\noindent Testing with GloVe embeddings, \verb|300d| performed significantly better 
+than \verb|50d|, achieving a dev accuracy of 0.781 and training accuracy of 0.865. 
+See graphs:
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{../out_accuracy/dan_train_accuracy.png}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{../out_accuracy/dan_dev_accuracy.png}
+\end{figure}
+
+\vspace{2em}
+
+\noindent Initializing the DAN model with random embeddings instead of GloVe embeddings 
+simply required using \verb|nn.Embedding| instead of the given \verb|WordEmbeddings| 
+class to create the embedding layer with the same dimensions. This model achieved 
+a dev accuracy of 0.756, however by epoch 50 already had hit a training accuracy of 1.0,
+indicating overfitting to the training data. The slightly lower dev accuracy is
+expected due to the lack of pretraining on a large corpus like GloVe provides, 
+as well as the overfitting observed. See graphs:
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{../out_accuracy/dan_random_train_accuracy.png}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{../out_accuracy/dan_random_dev_accuracy.png}
+\end{figure}
 
 \section*{Part 2: BPE}
+We implement the BPE algorithm a discussed by Senrich et al. in \verb|bpe.py|. The
+implementation follows the steps outlined in the paper, starting with splitting
+each sentence into its respective subwords and using the \verb|BPETokenizer| class
+to handle the BPE operations. The \verb|get_stats| function computes the frequency
+of each adjacent symbol pair in the corpus, while the \verb|merge_vocab| function
+merges the most frequent pair into a new symbol. We again use the \verb|<PAD>|
+and \verb|<UNK>| tokens to handle padding and unknown subwords respectively, with
+the same indices. The BPE tokenizer is then used in the \verb|SentimentDatasetBPE|
+class to convert sentences into sequences of subword indices for training the
+\verb|DANBPE| model, which is similar to the DAN model but uses the BPE tokenizer
+and embeddings. Here, we use a vocabulary size of 5000 and embedding dimension 
+of 100. Training and dev accuracy testing utilize the same optimizer and
+loss function as the previous models (Adam, NLL loss), and the training loop is
+similar as well (100 epochs, batch size 16, lr 0.0001). The BPE tokenizer on average
+is trained in about 2 minutes. The model achieves a dev accuracy of 0.722 and 
+training accuracy of 0.895. Both \verb|DAN_random| and \verb|DANBPE| models 
+perform worse than the original \verb|DAN| model with GloVe embeddings, likely
+due to the lack of pretrained word embeddings on the given dataset like GloVe provides.
+Additionally, random embeddings are more prone to overfitting, as seen in the \verb|DAN_random|
+model, and subwords may not capture the full semantic meaning of words as effectively
+as full word embeddings. See graphs:
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{../out_accuracy/dan_bpe_train_accuracy.png}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{../out_accuracy/dan_bpe_dev_accuracy.png}
+\end{figure}
 
 \section*{Part 3: Skip-Gram}
 \subsection*{Q1}

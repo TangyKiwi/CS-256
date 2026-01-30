@@ -201,7 +201,10 @@ def main():
         plt.plot(dan_train_accuracy)
         plt.xlabel('Epochs')
         plt.ylabel('Training Accuracy')
-        plt.title('Training Accuracy for DAN')
+        if args.model == "DAN_random":
+            plt.title('Training Accuracy for DAN w/ Random Embeddings')
+        else:
+            plt.title('Training Accuracy for DAN')
         plt.grid()
 
         # Save the training accuracy figure
@@ -216,7 +219,10 @@ def main():
         plt.plot(dan_test_accuracy)
         plt.xlabel('Epochs')
         plt.ylabel('Dev Accuracy')
-        plt.title('Dev Accuracy for DAN')
+        if args.model == "DAN_random":
+            plt.title('Dev Accuracy for DAN w/ Random Embeddings')
+        else:
+            plt.title('Dev Accuracy for DAN')
         plt.grid()
 
         # Save the testing accuracy figure
