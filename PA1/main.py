@@ -158,7 +158,7 @@ def main():
 
         # Save the training accuracy figure
         training_accuracy_file = 'bow_train_accuracy.png'
-        plt.savefig(training_accuracy_file)
+        plt.savefig("out_accuracy/" + training_accuracy_file)
         print(f"\n\nTraining accuracy plot saved as {training_accuracy_file}")
 
         # Plot the testing accuracy
@@ -173,7 +173,7 @@ def main():
 
         # Save the testing accuracy figure
         testing_accuracy_file = 'bow_dev_accuracy.png'
-        plt.savefig(testing_accuracy_file)
+        plt.savefig("out_accuracy/" + testing_accuracy_file)
         print(f"Dev accuracy plot saved as {testing_accuracy_file}\n\n")
 
         plt.show()
@@ -203,7 +203,7 @@ def main():
         training_accuracy_file = 'dan_train_accuracy.png'
         if args.model == "DAN_random":
             training_accuracy_file = 'dan_random_train_accuracy.png'
-        plt.savefig(training_accuracy_file)
+        plt.savefig("out_accuracy/" + training_accuracy_file)
         print(f"\n\nTraining accuracy plot saved as {training_accuracy_file}")
 
         # Plot the testing accuracy
@@ -218,7 +218,7 @@ def main():
         testing_accuracy_file = 'dan_dev_accuracy.png'
         if args.model == "DAN_random":
             testing_accuracy_file = 'dan_random_dev_accuracy.png'
-        plt.savefig(testing_accuracy_file)
+        plt.savefig("out_accuracy/" + testing_accuracy_file)
         print(f"Dev accuracy plot saved as {testing_accuracy_file}\n\n")
 
         plt.show()
@@ -240,7 +240,7 @@ def main():
 
         # Save the training accuracy figure
         training_accuracy_file = 'dan_bpe_train_accuracy.png'
-        plt.savefig(training_accuracy_file)
+        plt.savefig("out_accuracy/" + training_accuracy_file)
         print(f"\n\nTraining accuracy plot saved as {training_accuracy_file}")
 
         # Plot the testing accuracy
@@ -253,7 +253,7 @@ def main():
 
         # Save the testing accuracy figure
         testing_accuracy_file = 'dan_bpe_dev_accuracy.png'
-        plt.savefig(testing_accuracy_file)
+        plt.savefig("out_accuracy/" + testing_accuracy_file)
         print(f"Dev accuracy plot saved as {testing_accuracy_file}\n\n")
 
         plt.show()
