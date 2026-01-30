@@ -100,6 +100,11 @@ def main():
     # Parse the command-line arguments
     args = parser.parse_args()
 
+    # check if dir out_accuracy exists, if not create it
+    import os
+    if not os.path.exists("out_accuracy"):
+        os.makedirs("out_accuracy")
+
     # Load dataset
     start_time = time.time()
 
