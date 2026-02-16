@@ -1,11 +1,16 @@
 import torch
+import torch.nn as nn
 from torch.utils.data import DataLoader
 from torch.nn.utils.rnn import pad_sequence
 import os
 
 from tokenizer import SimpleTokenizer
 from dataset import SpeechesClassificationDataset, LanguageModelingDataset
+from transformer import TransformerEncoder, FeedForwardClassifier
+from utilities import Utilities
 
+from tqdm import tqdm
+import time
 
 seed = 42
 
@@ -108,8 +113,32 @@ def main():
 
     train_CLS_dataset = SpeechesClassificationDataset(tokenizer, "speechesdataset/train_CLS.tsv")
     train_CLS_loader = DataLoader(train_CLS_dataset, batch_size=batch_size,collate_fn=collate_batch,shuffle=True)
+    test_CLS_dataset = SpeechesClassificationDataset(tokenizer, "speechesdataset/test_CLS.tsv")
+    test_CLS_loader = DataLoader(test_CLS_dataset, batch_size=batch_size, collate_fn=collate_batch, shuffle=False)
 
-  
+    encoder = TransformerEncoder(
+        vocab_size=tokenizer.vocab_size,
+        block_size=block_size,
+        embed_size=n_embd,
+        num_heads=n_head,
+        num_layers=n_layer
+    ).to(device)
+
+    encoder.eval()
+    utils = Utilities(tokenizer, encoder)
+
+    utils.sanity_check("This is a test sentence for sanity check.", block_size)
+
+    classifier = FeedForwardClassifier(
+        encoder=encoder,
+        input_dim=n_input,
+        hidden_dim=n_hidden,
+        output_dim=n_output
+    ).to(device)
+
+    criterion = nn.CrossEntropyLoss()
+    optimizer = torch.optim.Adam(classifier.parameters(), lr=learning_rate)
+
     inputfile = "speechesdataset/train_LM.txt"
     with open(inputfile, 'r', encoding='utf-8') as f:
         lmtrainText = f.read()
@@ -118,12 +147,63 @@ def main():
 
      # for the classification  task, you will train for a fixed number of epochs like this:
 
+    epoch_summaries = []
+    t0 = time.perf_counter()
     for epoch in range(epochs_CLS):
-        for xb, yb in train_CLS_loader:
+        epoch_start_time = time.perf_counter()
+        for xb, yb in tqdm(train_CLS_loader, desc=f"Epoch {epoch + 1}/{epochs_CLS}"):
             xb, yb = xb.to(device), yb.to(device)
 
             # CLS training code here
+            optimizer.zero_grad(set_to_none=True)
 
+            logits = classifier(xb)
+            loss = criterion(logits, yb)
+
+            loss.backward()
+            optimizer.step()
+        train_acc = compute_classifier_accuracy(classifier, train_CLS_loader)
+        epoch_compute_time = time.perf_counter() - epoch_start_time
+        print(f"Epoch {epoch + 1}/{epochs_CLS}, Loss: {loss.item():.4f}, Train Accuracy: {train_acc:.2f}%, Time: {epoch_compute_time:.2f}s")
+        epoch_summaries.append({
+            "epoch": epoch + 1,
+            "loss": loss.item(),
+            "train_acc": train_acc,
+            "time": epoch_compute_time
+        })
+    total_train_time = time.perf_counter() - t0
+    final_train_acc = compute_classifier_accuracy(classifier, train_CLS_loader)
+    final_test_acc = compute_classifier_accuracy(classifier, test_CLS_loader)
+
+    model_summary = {
+        "vocab_size": tokenizer.vocab_size,
+        "block_size": block_size,
+        "embed_size": n_embd,
+        "num_heads": n_head,
+        "num_layers": n_layer,
+        "n_input": n_input,
+        "n_hidden": n_hidden,
+        "n_output": n_output
+    }
+
+    for k, v in model_summary.items():
+        print(f"{k}: {v}")
+
+    training_summary = {
+        "batch_size": batch_size,
+        "learning_rate": learning_rate,
+        "epochs_CLS": epochs_CLS,
+    }
+
+    for k, v in training_summary.items():
+        print(f"{k}: {v}")
+
+    for s in epoch_summaries:
+        print(f"Epoch {s['epoch']}: Loss={s['loss']:.4f}, Train Accuracy={s['train_acc']:.2f}%, Time={s['time']:.2f}s")
+
+    print(f"Total Training Time: {total_train_time:.2f}s")
+    print(f"Final Train Accuracy: {final_train_acc:.2f}%")
+    print(f"Final Test Accuracy: {final_test_acc:.2f}%")
 
     # for the language modeling task, you will iterate over the training data for a fixed number of iterations like this:
     for i, (xb, yb) in enumerate(train_LM_loader):
@@ -131,10 +211,6 @@ def main():
             break
         xb, yb = xb.to(device), yb.to(device)
         # LM training code here
-
-    
-
-
 
 if __name__ == "__main__":
     main()

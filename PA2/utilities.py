@@ -13,7 +13,8 @@ class Utilities:
 
         # Prepare the padded input for the model
         padded_sentence = wordids[:block_size] + [0] * (block_size - len(wordids))
-        input_tensor = torch.tensor(padded_sentence, dtype=torch.long).unsqueeze(0)
+        device = next(self.model.parameters()).device  # Get the device of the model parameters
+        input_tensor = torch.tensor(padded_sentence, dtype=torch.long, device=device).unsqueeze(0)
 
         # Display input tensor shape
         print("Input tensor shape:", input_tensor.shape)
