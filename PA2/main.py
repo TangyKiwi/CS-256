@@ -127,7 +127,10 @@ def main():
     encoder.eval()
     utils = Utilities(tokenizer, encoder)
 
-    utils.sanity_check("This is a test sentence for sanity check.", block_size)
+    utils.sanity_check(
+        "This is a test sentence for sanity check, it has almost thirty words in it to fill the majority of the attention map graph.", 
+        block_size
+    )
 
     classifier = FeedForwardClassifier(
         encoder=encoder,
@@ -193,6 +196,8 @@ def main():
         "batch_size": batch_size,
         "learning_rate": learning_rate,
         "epochs_CLS": epochs_CLS,
+        "total_params": sum(p.numel() for p in classifier.parameters()),
+        "trainable_params": sum(p.numel() for p in classifier.parameters() if p.requires_grad)
     }
 
     for k, v in training_summary.items():
