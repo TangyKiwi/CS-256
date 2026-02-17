@@ -1,11 +1,21 @@
 
 import matplotlib.pyplot as plt
 import torch
+import os
+
+from transformer import TransformerEncoder, TransformerDecoder
 
 class Utilities:
     def __init__(self, tokenizer, model):
         self.tokenizer = tokenizer
         self.model = model
+        if isinstance(self.model, TransformerEncoder):
+            self.name = "encoder"
+            self.output_dir = "encoder_attn_maps"
+        else:
+            self.name = "decoder"
+            self.output_dir = "decoder_attn_maps"
+        os.makedirs(self.output_dir, exist_ok=True)
 
     def sanity_check(self, sentence, block_size):
         # Encode the sentence using the tokenizer
@@ -40,10 +50,10 @@ class Utilities:
             cax = ax.imshow(att_map, cmap='hot', interpolation='nearest')
             ax.xaxis.tick_top()  
             fig.colorbar(cax, ax=ax)  
-            plt.title(f"Attention Map {j + 1}")
+            plt.title(f"{self.name.capitalize()} Attention Map {j + 1}")
             
             # Save the plot
-            plt.savefig(f"attention_map_{j + 1}.png")
+            plt.savefig(f"{self.output_dir}/{self.name}_attention_map_{j + 1}.png")
             
             # Show the plot
             plt.show()

@@ -6,7 +6,7 @@ import os
 
 from tokenizer import SimpleTokenizer
 from dataset import SpeechesClassificationDataset, LanguageModelingDataset
-from transformer import TransformerEncoder, FeedForwardClassifier
+from transformer import TransformerEncoder, FeedForwardClassifier, TransformerDecoder
 from utilities import Utilities
 
 from tqdm import tqdm
@@ -93,7 +93,6 @@ def compute_perplexity(decoderLMmodel, data_loader, eval_iters=100):
         X, Y = X.to(device), Y.to(device)
         loss = decoderLMmodel(X, Y) # your model should be computing the cross entropy loss
         losses.append(loss.item())
-        total_loss += loss.item()
         if len(losses) >= eval_iters: break
 
 
@@ -147,6 +146,35 @@ def main():
         lmtrainText = f.read()
     train_LM_dataset = LanguageModelingDataset(tokenizer, lmtrainText,  block_size)
     train_LM_loader = DataLoader(train_LM_dataset, batch_size=batch_size, shuffle=True)
+
+    def make_lm_loader(path):
+        with open(path, 'r', encoding='utf-8') as f:
+            text = f.read()
+        dataset = LanguageModelingDataset(tokenizer, text, block_size)
+        return DataLoader(dataset, batch_size=batch_size, shuffle=False)
+
+    test_obama_loader = make_lm_loader("speechesdataset/test_LM_obama.txt")
+    test_wbush_loader = make_lm_loader("speechesdataset/test_LM_wbush.txt")
+    test_hbush_loader = make_lm_loader("speechesdataset/test_LM_hbush.txt")
+
+    decoder = TransformerDecoder(
+        vocab_size=tokenizer.vocab_size,
+        block_size=block_size,
+        embed_size=n_embd,
+        num_heads=n_head,
+        num_layers=n_layer,
+        hidden_dim=n_hidden
+    ).to(device)
+
+    decoder.eval()
+    utils = Utilities(tokenizer, decoder)
+
+    utils.sanity_check(
+        "This is a test sentence for sanity check, it has almost thirty words in it to fill the majority of the attention map graph.", 
+        block_size
+    )
+
+    lm_optimizer = torch.optim.Adam(decoder.parameters(), lr=learning_rate)
 
      # for the classification  task, you will train for a fixed number of epochs like this:
 
@@ -210,12 +238,49 @@ def main():
     print(f"Final Train Accuracy: {final_train_acc:.2f}%")
     print(f"Final Test Accuracy: {final_test_acc:.2f}%")
 
+    t0 = time.perf_counter()
+    iter_summaries = []
     # for the language modeling task, you will iterate over the training data for a fixed number of iterations like this:
-    for i, (xb, yb) in enumerate(train_LM_loader):
+    for i, (xb, yb) in enumerate(tqdm(train_LM_loader, desc="Training LM", total=max_iters)):
         if i >= max_iters:
             break
         xb, yb = xb.to(device), yb.to(device)
         # LM training code here
+        lm_optimizer.zero_grad(set_to_none=True)
+        loss = decoder(xb, yb)
+        loss.backward()
+        lm_optimizer.step()
+
+        if (i + 1) % eval_interval == 0 or (i + 1) == 1 or (i + 1) == max_iters:
+            train_perplexity = compute_perplexity(decoder, train_LM_loader, eval_iters)
+            test_obama_perplexity = compute_perplexity(decoder, test_obama_loader, eval_iters)
+            test_wbush_perplexity = compute_perplexity(decoder, test_wbush_loader, eval_iters)
+            test_hbush_perplexity = compute_perplexity(decoder, test_hbush_loader, eval_iters)
+            print(f"\nIteration {i + 1}/{max_iters}, Loss: {loss.item():.4f}, Train Perplexity: {train_perplexity:.2f}, Test Obama Perplexity: {test_obama_perplexity:.2f}, Test W. Bush Perplexity: {test_wbush_perplexity:.2f}, Test H. Bush Perplexity: {test_hbush_perplexity:.2f}")
+            iter_summaries.append({
+                "iteration": i + 1,
+                "loss": loss.item(),
+                "train_perplexity": train_perplexity,
+                "test_obama_perplexity": test_obama_perplexity,
+                "test_wbush_perplexity": test_wbush_perplexity,
+                "test_hbush_perplexity": test_hbush_perplexity
+            })
+    total_lm_train_time = time.perf_counter() - t0
+    final_train_perplexity = compute_perplexity(decoder, train_LM_loader, eval_iters)
+    final_test_obama_perplexity = compute_perplexity(decoder, test_obama_loader, eval_iters)
+    final_test_wbush_perplexity = compute_perplexity(decoder, test_wbush_loader, eval_iters)
+    final_test_hbush_perplexity = compute_perplexity(decoder, test_hbush_loader, eval_iters)
+
+    for s in iter_summaries:
+        print(f"Iteration {s['iteration']}: Loss={s['loss']:.4f}, Train Perplexity={s['train_perplexity']:.2f}, Test Obama Perplexity={s['test_obama_perplexity']:.2f}, Test W. Bush Perplexity={s['test_wbush_perplexity']:.2f}, Test H. Bush Perplexity={s['test_hbush_perplexity']:.2f}")
+
+    print(f"Total LM Training Time: {total_lm_train_time:.2f}s")
+    print(f"Final Train Perplexity: {final_train_perplexity:.2f}")
+    print(f"Final Test Obama Perplexity: {final_test_obama_perplexity:.2f}")
+    print(f"Final Test W. Bush Perplexity: {final_test_wbush_perplexity:.2f}")
+    print(f"Final Test H. Bush Perplexity: {final_test_hbush_perplexity:.2f}")
+    print(f"Total Parameters in Decoder LM: {sum(p.numel() for p in decoder.parameters())}")
+    print(f"Trainable Parameters in Decoder LM: {sum(p.numel() for p in decoder.parameters() if p.requires_grad)}")
 
 if __name__ == "__main__":
     main()

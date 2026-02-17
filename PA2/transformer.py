@@ -14,7 +14,8 @@ class SelfAttentionHead(nn.Module):
     def forward(
             self,
             x: torch.Tensor,
-            mask: Optional[torch.Tensor] = None
+            mask: Optional[torch.Tensor] = None,
+            causal: bool = False
     ) -> Tuple[torch.Tensor, torch.Tensor]:
         B, T, C = x.shape
         K = self.key(x)  # (B, T, head_dim)
@@ -24,10 +25,16 @@ class SelfAttentionHead(nn.Module):
         # Compute attention scores
         att = Q @ K.transpose(-2, -1) / (self.head_dim ** 0.5)  # (B, T, T)
 
-        if mask is not None:
-            mask_valid = mask[:, None, None, :]
-            att = att.masked_fill(~mask_valid.squeeze(1), float('-inf'))
+        allowed = torch.ones((B, T, T), device=x.device, dtype=torch.bool)
 
+        if causal:
+            causal_mask = torch.tril(torch.ones((T, T), device=x.device, dtype=torch.bool))
+            allowed &= causal_mask.unsqueeze(0)
+
+        if mask is not None:
+            allowed &= mask[:, None, :]
+
+        att = att.masked_fill(~allowed, float('-inf'))  # Mask out disallowed positions
         att = F.softmax(att, dim=-1)  # (B, T, T)
         out = att @ V  # (B, T, head_dim)
 
@@ -44,12 +51,13 @@ class MultiHeadSelfAttention(nn.Module):
     def forward(
             self,
             x: torch.Tensor,
-            mask: Optional[torch.Tensor] = None
+            mask: Optional[torch.Tensor] = None,
+            causal: bool = False
     ) -> Tuple[torch.Tensor, torch.Tensor]:
         head_outputs = []
         att_maps = []
         for head in self.heads:
-            out, att_map = head(x, mask)
+            out, att_map = head(x, mask, causal=causal)
             head_outputs.append(out)
             att_maps.append(att_map)
 
@@ -162,10 +170,9 @@ class DecoderBlock(nn.Module):
     def forward(
             self,
             x: torch.Tensor,
-            enc_out: torch.Tensor,
             mask: Optional[torch.Tensor] = None
     ) -> Tuple[torch.Tensor, torch.Tensor]:
-        att_out, att_maps = self.mhsa(self.ln1(x), mask)
+        att_out, att_maps = self.mhsa(self.ln1(x), mask, causal=True)
         x = x + att_out
         x = x + self.ffn(self.ln2(x))
         return x, att_maps
@@ -229,4 +236,4 @@ class TransformerDecoder(nn.Module):
             targets.view(B * T),
         )
 
-        return loss, att_maps_all
+        return loss
