@@ -17,7 +17,7 @@ class Utilities:
             self.output_dir = "decoder_attn_maps"
         os.makedirs(self.output_dir, exist_ok=True)
 
-    def sanity_check(self, sentence, block_size):
+    def sanity_check(self, sentence, block_size, desc=""):
         # Encode the sentence using the tokenizer
         wordids = self.tokenizer.encode(sentence)
 
@@ -53,7 +53,7 @@ class Utilities:
             plt.title(f"{self.name.capitalize()} Attention Map {j + 1}")
             
             # Save the plot
-            plt.savefig(f"{self.output_dir}/{self.name}_attention_map_{j + 1}.png")
+            plt.savefig(f"{self.output_dir}/{self.name}_{desc}_attention_map_{j + 1}.png")
             
             # Show the plot
             plt.show()
