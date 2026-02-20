@@ -118,6 +118,37 @@ def main():
     tokenizer = SimpleTokenizer(' '.join(texts)) # create a tokenizer from the data
     print("Vocabulary size is", tokenizer.vocab_size)
 
+    if PART in ['test', '1', 'all']:
+        encoder = TransformerEncoder(
+                vocab_size=tokenizer.vocab_size,
+                block_size=block_size,
+                embed_size=n_embd,
+                num_heads=n_head,
+                num_layers=n_layer
+            ).to(device)
+    
+    if PART in ['test', '2', 'all']:
+        decoder = TransformerDecoder(
+                vocab_size=tokenizer.vocab_size,
+                block_size=block_size,
+                embed_size=n_embd,
+                num_heads=n_head,
+                num_layers=n_layer,
+                hidden_dim=n_hidden
+            ).to(device)
+    
+    if PART in ['test', '3', 'all']:
+        window_size = 8
+        decoder_3 = TransformerDecoder(
+            vocab_size=tokenizer.vocab_size,
+            block_size=block_size,
+            embed_size=n_embd,
+            num_heads=n_head,
+            num_layers=n_layer,
+            hidden_dim=n_hidden,
+            window_size=window_size
+        ).to(device)
+
     if PART in ['test', 'all']:
         sanity_sentence_short = "This is a test sentence for sanity check, it has almost thirty words in it to fill the majority of the attention map graph."
         sanity_sentence_long = "This is a really long sentence that is meant to for the sanity test check, it has more than thirty two words in it so that we can see how the attention map looks when the sentence length exceeds the given block size."
@@ -126,21 +157,6 @@ def main():
         print(sanity_sentence_short)
         print("Sanity Check Test w/ Long Sentence:")
         print(sanity_sentence_long)
-
-    if PART in ['1', 'all']:
-        train_CLS_dataset = SpeechesClassificationDataset(tokenizer, "speechesdataset/train_CLS.tsv")
-        train_CLS_loader = DataLoader(train_CLS_dataset, batch_size=batch_size,collate_fn=collate_batch,shuffle=True)
-        test_CLS_dataset = SpeechesClassificationDataset(tokenizer, "speechesdataset/test_CLS.tsv")
-        test_CLS_loader = DataLoader(test_CLS_dataset, batch_size=batch_size, collate_fn=collate_batch, shuffle=False)
-
-    if PART in ['test', '1', 'all']:
-        encoder = TransformerEncoder(
-            vocab_size=tokenizer.vocab_size,
-            block_size=block_size,
-            embed_size=n_embd,
-            num_heads=n_head,
-            num_layers=n_layer
-        ).to(device)
 
         encoder.eval()
         utils = Utilities(tokenizer, encoder)
@@ -159,43 +175,6 @@ def main():
             "long"
         )
 
-        classifier = FeedForwardClassifier(
-            encoder=encoder,
-            input_dim=n_input,
-            hidden_dim=n_hidden,
-            output_dim=n_output
-        ).to(device)
-
-        criterion = nn.CrossEntropyLoss()
-        optimizer = torch.optim.Adam(classifier.parameters(), lr=learning_rate)
-
-    if PART in ['2', 'all']:
-        inputfile = "speechesdataset/train_LM.txt"
-        with open(inputfile, 'r', encoding='utf-8') as f:
-            lmtrainText = f.read()
-        train_LM_dataset = LanguageModelingDataset(tokenizer, lmtrainText,  block_size)
-        train_LM_loader = DataLoader(train_LM_dataset, batch_size=batch_size, shuffle=True)
-
-        def make_lm_loader(path):
-            with open(path, 'r', encoding='utf-8') as f:
-                text = f.read()
-            dataset = LanguageModelingDataset(tokenizer, text, block_size)
-            return DataLoader(dataset, batch_size=batch_size, shuffle=False)
-
-        test_obama_loader = make_lm_loader("speechesdataset/test_LM_obama.txt")
-        test_wbush_loader = make_lm_loader("speechesdataset/test_LM_wbush.txt")
-        test_hbush_loader = make_lm_loader("speechesdataset/test_LM_hbush.txt")
-
-    if PART in ['test', '2', 'all']:
-        decoder = TransformerDecoder(
-            vocab_size=tokenizer.vocab_size,
-            block_size=block_size,
-            embed_size=n_embd,
-            num_heads=n_head,
-            num_layers=n_layer,
-            hidden_dim=n_hidden
-        ).to(device)
-
         decoder.eval()
         utils = Utilities(tokenizer, decoder)
 
@@ -213,7 +192,61 @@ def main():
             "long"
         )
 
+        decoder_3.eval()
+        utils = Utilities(tokenizer, decoder_3)
+
+        print("Decoder w/ Local Window Attention Sanity Check Test w/ Short Sentence:")
+        utils.sanity_check(
+            sanity_sentence_short, 
+            block_size,
+            "short_3"
+        )
+
+        print("Decoder w/ Local Window Attention Sanity Check Test w/ Long Sentence:")
+        utils.sanity_check(
+            sanity_sentence_long, 
+            block_size,
+            "long_3"
+        )
+
+    if PART in ['1', 'all']:
+        train_CLS_dataset = SpeechesClassificationDataset(tokenizer, "speechesdataset/train_CLS.tsv")
+        train_CLS_loader = DataLoader(train_CLS_dataset, batch_size=batch_size,collate_fn=collate_batch,shuffle=True)
+        test_CLS_dataset = SpeechesClassificationDataset(tokenizer, "speechesdataset/test_CLS.tsv")
+        test_CLS_loader = DataLoader(test_CLS_dataset, batch_size=batch_size, collate_fn=collate_batch, shuffle=False)
+
+        classifier = FeedForwardClassifier(
+            encoder=encoder,
+            input_dim=n_input,
+            hidden_dim=n_hidden,
+            output_dim=n_output
+        ).to(device)
+
+        criterion = nn.CrossEntropyLoss()
+        optimizer = torch.optim.Adam(classifier.parameters(), lr=learning_rate)
+        
+    if PART in ['2', '3', 'all']:
+        inputfile = "speechesdataset/train_LM.txt"
+        with open(inputfile, 'r', encoding='utf-8') as f:
+            lmtrainText = f.read()
+        train_LM_dataset = LanguageModelingDataset(tokenizer, lmtrainText,  block_size)
+        train_LM_loader = DataLoader(train_LM_dataset, batch_size=batch_size, shuffle=True)
+
+        def make_lm_loader(path):
+            with open(path, 'r', encoding='utf-8') as f:
+                text = f.read()
+            dataset = LanguageModelingDataset(tokenizer, text, block_size)
+            return DataLoader(dataset, batch_size=batch_size, shuffle=False)
+
+        test_obama_loader = make_lm_loader("speechesdataset/test_LM_obama.txt")
+        test_wbush_loader = make_lm_loader("speechesdataset/test_LM_wbush.txt")
+        test_hbush_loader = make_lm_loader("speechesdataset/test_LM_hbush.txt")
+
+    if PART in ['2', 'all']:
         lm_optimizer = torch.optim.Adam(decoder.parameters(), lr=learning_rate)
+
+    if PART in ['3', 'all']:
+        lm_optimizer_3 = torch.optim.Adam(decoder_3.parameters(), lr=learning_rate)
 
      # for the classification  task, you will train for a fixed number of epochs like this:
 
@@ -322,6 +355,51 @@ def main():
         print(f"Final Test H. Bush Perplexity: {final_test_hbush_perplexity:.2f}")
         print(f"Total Parameters in Decoder LM: {sum(p.numel() for p in decoder.parameters())}")
         print(f"Trainable Parameters in Decoder LM: {sum(p.numel() for p in decoder.parameters() if p.requires_grad)}")
+
+    if PART in ['3', 'all']:
+        t0 = time.perf_counter()
+        iter_summaries = []
+        # for the language modeling task, you will iterate over the training data for a fixed number of iterations like this:
+        for i, (xb, yb) in enumerate(tqdm(train_LM_loader, desc="Training LM w/ Local Window Attention", total=max_iters)):
+            if i >= max_iters:
+                break
+            xb, yb = xb.to(device), yb.to(device)
+            # LM training code here
+            lm_optimizer_3.zero_grad(set_to_none=True)
+            loss = decoder_3(xb, yb)
+            loss.backward()
+            lm_optimizer_3.step()
+
+            if (i + 1) % eval_interval == 0 or (i + 1) == 1 or (i + 1) == max_iters:
+                train_perplexity = compute_perplexity(decoder_3, train_LM_loader, eval_iters)
+                test_obama_perplexity = compute_perplexity(decoder_3, test_obama_loader, eval_iters)
+                test_wbush_perplexity = compute_perplexity(decoder_3, test_wbush_loader, eval_iters)
+                test_hbush_perplexity = compute_perplexity(decoder_3, test_hbush_loader, eval_iters)
+                print(f"\nIteration {i + 1}/{max_iters}, Loss: {loss.item():.4f}, Train Perplexity: {train_perplexity:.2f}, Test Obama Perplexity: {test_obama_perplexity:.2f}, Test W. Bush Perplexity: {test_wbush_perplexity:.2f}, Test H. Bush Perplexity: {test_hbush_perplexity:.2f}")
+                iter_summaries.append({
+                    "iteration": i + 1,
+                    "loss": loss.item(),
+                    "train_perplexity": train_perplexity,
+                    "test_obama_perplexity": test_obama_perplexity,
+                    "test_wbush_perplexity": test_wbush_perplexity,
+                    "test_hbush_perplexity": test_hbush_perplexity
+                })
+        total_lm_train_time = time.perf_counter() - t0
+        final_train_perplexity = compute_perplexity(decoder_3, train_LM_loader, eval_iters)
+        final_test_obama_perplexity = compute_perplexity(decoder_3, test_obama_loader, eval_iters)
+        final_test_wbush_perplexity = compute_perplexity(decoder_3, test_wbush_loader, eval_iters)
+        final_test_hbush_perplexity = compute_perplexity(decoder_3, test_hbush_loader, eval_iters)
+
+        for s in iter_summaries:
+            print(f"Iteration {s['iteration']}: Loss={s['loss']:.4f}, Train Perplexity={s['train_perplexity']:.2f}, Test Obama Perplexity={s['test_obama_perplexity']:.2f}, Test W. Bush Perplexity={s['test_wbush_perplexity']:.2f}, Test H. Bush Perplexity={s['test_hbush_perplexity']:.2f}")
+
+        print(f"Total LM Training Time: {total_lm_train_time:.2f}s")
+        print(f"Final Train Perplexity: {final_train_perplexity:.2f}")
+        print(f"Final Test Obama Perplexity: {final_test_obama_perplexity:.2f}")
+        print(f"Final Test W. Bush Perplexity: {final_test_wbush_perplexity:.2f}")
+        print(f"Final Test H. Bush Perplexity: {final_test_hbush_perplexity:.2f}")
+        print(f"Total Parameters in Decoder LM: {sum(p.numel() for p in decoder_3.parameters())}")
+        print(f"Trainable Parameters in Decoder LM: {sum(p.numel() for p in decoder_3.parameters() if p.requires_grad)}")
 
 if __name__ == "__main__":
     main()

@@ -15,7 +15,8 @@ class SelfAttentionHead(nn.Module):
             self,
             x: torch.Tensor,
             mask: Optional[torch.Tensor] = None,
-            causal: bool = False
+            causal: bool = False,
+            window_size: Optional[int] = None
     ) -> Tuple[torch.Tensor, torch.Tensor]:
         B, T, C = x.shape
         K = self.key(x)  # (B, T, head_dim)
@@ -25,14 +26,20 @@ class SelfAttentionHead(nn.Module):
         # Compute attention scores
         att = Q @ K.transpose(-2, -1) / (self.head_dim ** 0.5)  # (B, T, T)
 
-        allowed = torch.ones((B, T, T), device=x.device, dtype=torch.bool)
+        base_mask = torch.ones((T, T), device=x.device, dtype=torch.bool)
 
         if causal:
-            causal_mask = torch.tril(torch.ones((T, T), device=x.device, dtype=torch.bool))
-            allowed &= causal_mask.unsqueeze(0)
+            base_mask &= torch.tril(torch.ones((T, T), device=x.device, dtype=torch.bool))
+
+        if window_size is not None:
+            i = torch.arange(T, device=x.device)[:, None]
+            j = torch.arange(T, device=x.device)[None, :]
+            base_mask &= (j >= (i - window_size + 1))
+
+        allowed = base_mask.unsqueeze(0).expand(B, T, T)  # (B, T, T)
 
         if mask is not None:
-            allowed &= mask[:, None, :]
+            allowed = allowed & mask[:, None, :]
 
         att = att.masked_fill(~allowed, float('-inf'))  # Mask out disallowed positions
         att = F.softmax(att, dim=-1)  # (B, T, T)
@@ -52,12 +59,13 @@ class MultiHeadSelfAttention(nn.Module):
             self,
             x: torch.Tensor,
             mask: Optional[torch.Tensor] = None,
-            causal: bool = False
+            causal: bool = False,
+            window_size: Optional[int] = None
     ) -> Tuple[torch.Tensor, torch.Tensor]:
         head_outputs = []
         att_maps = []
         for head in self.heads:
-            out, att_map = head(x, mask, causal=causal)
+            out, att_map = head(x, mask, causal=causal, window_size=window_size)
             head_outputs.append(out)
             att_maps.append(att_map)
 
@@ -160,19 +168,20 @@ class FeedForwardClassifier(nn.Module):
         return self.fc2(x)  # (B, output_dim)
     
 class DecoderBlock(nn.Module):
-    def __init__(self, embed_size: int, num_heads: int, hidden_dim: int = 100):
+    def __init__(self, embed_size: int, num_heads: int, hidden_dim: int = 100, window_size: Optional[int] = None):
         super().__init__()
         self.ln1 = nn.LayerNorm(embed_size)
         self.mhsa = MultiHeadSelfAttention(embed_size, num_heads)
         self.ln2 = nn.LayerNorm(embed_size)
         self.ffn = FeedForward(embed_size, hidden_dim)
+        self.window_size = window_size
 
     def forward(
             self,
             x: torch.Tensor,
             mask: Optional[torch.Tensor] = None
     ) -> Tuple[torch.Tensor, torch.Tensor]:
-        att_out, att_maps = self.mhsa(self.ln1(x), mask, causal=True)
+        att_out, att_maps = self.mhsa(self.ln1(x), mask, causal=True, window_size=self.window_size)
         x = x + att_out
         x = x + self.ffn(self.ln2(x))
         return x, att_maps
@@ -186,6 +195,7 @@ class TransformerDecoder(nn.Module):
             num_heads: int, 
             num_layers: int,
             hidden_dim: Optional[int] = 100, 
+            window_size: Optional[int] = None
     ):
         super().__init__()
         self.vocab_size = vocab_size
@@ -199,7 +209,7 @@ class TransformerDecoder(nn.Module):
             hidden_dim = 4 * embed_size
 
         self.blocks = nn.ModuleList([
-            DecoderBlock(embed_size, num_heads, hidden_dim) for _ in range(num_layers)
+            DecoderBlock(embed_size, num_heads, hidden_dim, window_size=window_size) for _ in range(num_layers)
         ])
         self.ln_f = nn.LayerNorm(embed_size)
         self.lm_head = nn.Linear(embed_size, vocab_size)
