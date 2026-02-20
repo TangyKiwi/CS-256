@@ -275,12 +275,14 @@ def main():
                 loss.backward()
                 optimizer.step()
             train_acc = compute_classifier_accuracy(classifier, train_CLS_loader)
+            test_acc = compute_classifier_accuracy(classifier, test_CLS_loader)
             epoch_compute_time = time.perf_counter() - epoch_start_time
-            print(f"Epoch {epoch + 1}/{epochs_CLS}, Loss: {loss.item():.4f}, Train Accuracy: {train_acc:.2f}%, Time: {epoch_compute_time:.2f}s")
+            print(f"Epoch {epoch + 1}/{epochs_CLS}, Loss: {loss.item():.4f}, Train Accuracy: {train_acc:.2f}%, Test Accuracy: {test_acc:.2f}%, Time: {epoch_compute_time:.2f}s")
             epoch_summaries.append({
                 "epoch": epoch + 1,
                 "loss": loss.item(),
                 "train_acc": train_acc,
+                "test_acc": test_acc,
                 "time": epoch_compute_time
             })
         total_train_time = time.perf_counter() - t0
@@ -313,7 +315,7 @@ def main():
             print(f"{k}: {v}")
 
         for s in epoch_summaries:
-            print(f"Epoch {s['epoch']}: Loss={s['loss']:.4f}, Train Accuracy={s['train_acc']:.2f}%, Time={s['time']:.2f}s")
+            print(f"Epoch {s['epoch']}: Loss={s['loss']:.4f}, Train Accuracy={s['train_acc']:.2f}%, Test Accuracy={s['test_acc']:.2f}%, Time={s['time']:.2f}s")
 
         print(f"Total Training Time: {total_train_time:.2f}s")
         print(f"Final Train Accuracy: {final_train_acc:.2f}%")

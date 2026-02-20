@@ -1,0 +1,236 @@
+%! Author = Kevin Lin
+%! Date = 2/20/2025
+
+% Preamble
+\documentclass[11pt,a4paper,margin=1in]{article}
+
+% Packages
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{enumerate}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{float}
+
+\title{PA2 Report}
+\author{Kevin Lin}
+\date{2/20/2025}
+
+% Document
+\begin{document}
+\maketitle
+
+\section*{Part 1: Encoder w/ Classifier}
+We implement the encoder similar to discussed in the Karpathy video, in \verb|transformer.py|.
+The encoder represents each input token with two learned components: a token
+embedding which maps vocabulary IDs to \verb|n_embd| size dimensional vectors, 
+and a positional embedding which maps positions of 0 to \verb|block_size-1| to 
+\verb|n_embd| size dimensional vectors. These are summed to form the initial
+sequence representation, a standard transformer pattern. Because the classification
+inputs are padded to a fixed length, the encoder constructs a padding mask
+from the input tokens (index 0). This mask is used inside the attention to prevent
+the model from "reading" padding tokens as meaninful context. Here, attention is
+non-causl, meaning that each token can attend to any other token in the sequence
+(excluding padding), which is appropriate for classification where the full sentence
+is available. 
+
+\vspace{1em}
+
+\noindent The encoder is built as a stack of \verb|n_layer| identical \verb|EncoderBlock|s.
+Each block follows the typical transformer structure of: layer normalization,
+multi-head self attention, residual connection, layer normalization, position-wise
+feedforward network, and another residual connection. The multi-head attention
+allows the model to learn multiple interaction patterns between tokens in parallel,
+while the feedfoward layer then refines each token representation independently. 
+Residual connections help stabilize training and allow gradients to flow more 
+easily through the network. The final output of the encoder is a contextualized
+representation for evry position in the input sequence, which is then passed
+to the classifier.
+
+\vspace{1em}
+
+\noindent For classification, the model converts the encoder's token level outputs into 
+a single vector per example using mean pooling across the time dimension (average
+of all the token embeddings, ignoring padding). This pooled representation is then
+fed into a two-layer feedfoward classifier: linear projection to hidden layer 
+of size \verb|n_hidden|, ReLU activation, then another linear projection to 
+\verb|n_output=3| class logits. We don't utilize dropout to keep the classifier
+simple. The classifier is trained end-to-end with standard cross-entropy loss,
+using Adam optimization.
+
+\vspace{1em}
+
+\noindent For sanity checks, we test two sentences. The first is a short sentence: 
+``This is a test sentence for sanity check, it has almost thirty words in it to 
+fill the majority of the attention map graph.'' The second is a longer sentence: 
+``This is a really long sentence that is meant to for the sanity test check, it 
+has more than thirty two words in it so that we can see how the attention map 
+looks when the sentence length exceeds the given block size.'' The goal here
+is not to test accuracy, but rather to inspect the attention maps and ensure
+that the model is behaving as expected across different input lengths.
+
+\begin{center}
+\begin{longtable}{@{}p{0.49\linewidth}p{0.49\linewidth}@{}}
+\includegraphics[width=\linewidth]{../encoder_attn_maps/encoder_short_attention_map_1.png} &
+\includegraphics[width=\linewidth]{../encoder_attn_maps/encoder_short_attention_map_2.png} \\
+\includegraphics[width=\linewidth]{../encoder_attn_maps/encoder_short_attention_map_3.png} &
+\includegraphics[width=\linewidth]{../encoder_attn_maps/encoder_short_attention_map_4.png} \\
+\includegraphics[width=\linewidth]{../encoder_attn_maps/encoder_short_attention_map_5.png} &
+\includegraphics[width=\linewidth]{../encoder_attn_maps/encoder_short_attention_map_6.png} \\
+\includegraphics[width=\linewidth]{../encoder_attn_maps/encoder_short_attention_map_7.png} &
+\includegraphics[width=\linewidth]{../encoder_attn_maps/encoder_short_attention_map_8.png} \\
+\end{longtable}
+\end{center}
+
+\noindent We can see that for the short sentence, the attention maps shows that
+the model is attending to all tokens in the sequence, as expected. No attention
+mass was assigned to the padding positions, hence the black squares on the right
+most columns. Tokens attend to themselves and other tokens in the sequence, with 
+some variation across heads. This indicates that the multi-head attention is functioning 
+correctly, and the padding mask is properly preventing attention to padding tokens.
+
+\begin{center}
+\begin{longtable}{@{}p{0.49\linewidth}p{0.49\linewidth}@{}}
+\includegraphics[width=\linewidth]{../encoder_attn_maps/encoder_long_attention_map_1.png} &
+\includegraphics[width=\linewidth]{../encoder_attn_maps/encoder_long_attention_map_2.png} \\
+\includegraphics[width=\linewidth]{../encoder_attn_maps/encoder_long_attention_map_3.png} &
+\includegraphics[width=\linewidth]{../encoder_attn_maps/encoder_long_attention_map_4.png} \\
+\includegraphics[width=\linewidth]{../encoder_attn_maps/encoder_long_attention_map_5.png} &
+\includegraphics[width=\linewidth]{../encoder_attn_maps/encoder_long_attention_map_6.png} \\
+\includegraphics[width=\linewidth]{../encoder_attn_maps/encoder_long_attention_map_7.png} &
+\includegraphics[width=\linewidth]{../encoder_attn_maps/encoder_long_attention_map_8.png} \\
+\end{longtable}
+\end{center}
+
+\noindent Now for the long sentence, we can see that the attention maps show that 
+the model is attending to all tokens up to the block size limit of 32, and then 
+ignores the rest of the tokens as expected. Across both tests, the encoder
+successfully produced consistent attention maps and contextualized representations,
+confirming the proper implementation of the mutli-head self attention, padding
+mask, and stable residual and normalization behavior across varying sequence lengths.
+
+\vspace{1em}
+
+\noindent We train the encoder and classifier jointly from scratch on the \verb|train_CLS|
+dataset, and test on the \verb|test_CLS| dataset with the following hyperparameters:
+
+\begin{verbatim}
+vocab_size: 5755
+block_size: 32
+embed_size: 64
+num_heads: 2
+num_layers: 4
+n_input: 64
+n_hidden: 100
+n_output: 3
+batch_size: 16
+learning_rate: 0.001
+\end{verbatim}
+
+\noindent After training for 15 epochs, we achieve a final test accuracy of 87.60\%, and
+final train accuracy of 99.24\%. The training and test accuracies across epochs 
+are shown in the table below, along with the loss and time taken for each epoch. 
+
+\begin{table}[htbp]
+\centering
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+\textbf{Epoch} & \textbf{Loss} & \textbf{Train Acc. (\%)} & \textbf{Test Acc. (\%)} & \textbf{Time (s)} \\
+\hline
+1  & 1.0440 & 44.65 & 33.33 & 3.77 \\
+2  & 1.0559 & 48.33 & 38.00 & 3.22 \\
+3  & 0.8916 & 59.94 & 52.27 & 3.16 \\
+4  & 1.2615 & 69.79 & 60.93 & 3.10 \\
+5  & 0.7971 & 78.97 & 69.87 & 3.04 \\
+6  & 0.3426 & 84.23 & 75.33 & 3.26 \\
+7  & 0.2845 & 91.30 & 80.27 & 3.38 \\
+8  & 0.2748 & 92.93 & 79.87 & 3.23 \\
+9  & 0.0460 & 96.03 & 82.53 & 3.19 \\
+10 & 0.0970 & 97.37 & 83.87 & 3.37 \\
+11 & 0.2767 & 93.74 & 79.73 & 3.32 \\
+12 & 0.0604 & 97.47 & 85.47 & 3.24 \\
+13 & 0.0054 & 99.52 & 86.00 & 3.15 \\
+14 & 0.0026 & 99.24 & 87.60 & 3.18 \\
+15 & 0.0461 & 97.99 & 84.67 & 3.51 \\
+\hline
+\end{tabular}
+\end{table}
+
+\section*{Part 2: Decoder Language Model}
+\noindent We implement the decoder similar to discussed in the Karpathy video, in \verb|transformer.py|.
+This decoder replace the encoder-classifier architecture with a decoder-only
+transformer trained for autoregressive language modeling. The overal structure 
+is similar to the encoder: token and positional embeddings are ssummed to produce
+input representations, which are then passed through a stack of transformer
+blocks of multi-head self attentions, feedfoward layers, residual connections, and
+layer normalizations. The key differene is that the decoder operate sunder a 
+causal constraint, which enforces autoregressive behavior so that each token
+can only attend to itelf and preceding tokens. 
+
+\vspace{1em}
+
+\noindent We implement the causal mask by creating a lower triangular mask which
+is applied inside the self attention mechanism. For a sequence length of $T$, the
+mask ensures that position $i$ can only attend to positions $0 \dots i$ and not
+any future positions, which are explicilty masked out before the softmax
+operation by assigning them $-\infty$ attention scores. The same padding mask
+is applied from before after.
+
+\vspace{1em}
+
+\noindent The decoder produces a contextualized representation at every time step.
+A final linear projection layer maps these representations to vocabulary logits.
+During training, the model predicts the next toekn at each position, and cross-entropy
+loss is computed across all time steps. Here, we evaluate using perplexity, which
+is the exponential of the average cross-entropy loss, and measures how well the 
+model predicts the next token in the sequence.
+
+\vspace{1em}
+
+\noindent We sanity test the decoder using the same two short and long sentences as before.
+
+\begin{center}
+\begin{longtable}{@{}p{0.49\linewidth}p{0.49\linewidth}@{}}
+\includegraphics[width=\linewidth]{../decoder_attn_maps/decoder_short_attention_map_1.png} &
+\includegraphics[width=\linewidth]{../decoder_attn_maps/decoder_short_attention_map_2.png} \\
+\includegraphics[width=\linewidth]{../decoder_attn_maps/decoder_short_attention_map_3.png} &
+\includegraphics[width=\linewidth]{../decoder_attn_maps/decoder_short_attention_map_4.png} \\
+\includegraphics[width=\linewidth]{../decoder_attn_maps/decoder_short_attention_map_5.png} &
+\includegraphics[width=\linewidth]{../decoder_attn_maps/decoder_short_attention_map_6.png} \\
+\includegraphics[width=\linewidth]{../decoder_attn_maps/decoder_short_attention_map_7.png} &
+\includegraphics[width=\linewidth]{../decoder_attn_maps/decoder_short_attention_map_8.png} \\
+\end{longtable}
+\end{center}
+
+\noindent Here we can see that for the short sentence, each position is only attended
+to itself and earlier tokens, leading to the characteristic triangular attention 
+pattern. Padding positions again, are properly masked out, leading to the black
+columns on the right.
+
+\begin{center}
+\begin{longtable}{@{}p{0.49\linewidth}p{0.49\linewidth}@{}}
+\includegraphics[width=\linewidth]{../decoder_attn_maps/decoder_long_attention_map_1.png} &
+\includegraphics[width=\linewidth]{../decoder_attn_maps/decoder_long_attention_map_2.png} \\
+\includegraphics[width=\linewidth]{../decoder_attn_maps/decoder_long_attention_map_3.png} &
+\includegraphics[width=\linewidth]{../decoder_attn_maps/decoder_long_attention_map_4.png} \\
+\includegraphics[width=\linewidth]{../decoder_attn_maps/decoder_long_attention_map_5.png} &
+\includegraphics[width=\linewidth]{../decoder_attn_maps/decoder_long_attention_map_6.png} \\
+\includegraphics[width=\linewidth]{../decoder_attn_maps/decoder_long_attention_map_7.png} &
+\includegraphics[width=\linewidth]{../decoder_attn_maps/decoder_long_attention_map_8.png} \\
+\end{longtable}
+\end{center}
+
+\noindent Likewise, for the long sentence, we can see that the attention maps 
+show the same pattern up to the block size limit of 32, confirming that the 
+causal mask is properly implemented and the decoder is behaving as expected across
+different input lengths.
+
+\vspace{1em}
+
+\noindent We train the decoder on the \verb|train_LM| dataset, and evaluate on the
+\verb|text_LM| dataset with the same hyperparameters as before. The only difference
+is that we train on all batches for the entire dataset, and is limited to 500
+iterations to sae time due to the large amount of tokens being processed.
+
+\end{document}
