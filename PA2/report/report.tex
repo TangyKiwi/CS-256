@@ -126,6 +126,7 @@ n_hidden: 100
 n_output: 3
 batch_size: 16
 learning_rate: 0.001
+total_params: 576467
 \end{verbatim}
 
 \noindent After training for 15 epochs, we achieve a final test accuracy of 87.60\%, and
@@ -231,6 +232,123 @@ different input lengths.
 \noindent We train the decoder on the \verb|train_LM| dataset, and evaluate on the
 \verb|text_LM| dataset with the same hyperparameters as before. The only difference
 is that we train on all batches for the entire dataset, and is limited to 500
-iterations to sae time due to the large amount of tokens being processed.
+iterations to save time due to the large amount of tokens being processed. Due 
+to the difference in architecture, we now have a total of 863243 parameters. We
+successfully obtain a final training perplexity of 162.97, Obama perplexity of 375.02,
+W. Bush perplexity of 476.34, and H. Bush perplexity of 414.64. Our results per 
+every 100 iterations are shown in the table below:
+
+\begin{table}[htbp]
+\centering
+\resizebox{\textwidth}{!}{
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+\textbf{Iter} & \textbf{Loss} & \textbf{Train PPL} & \textbf{Obama PPL} & \textbf{W. Bush PPL} & \textbf{H. Bush PPL} \\
+\hline
+1   & 8.8477 & 6489.78 & 6421.51 & 6602.67 & 6504.76 \\
+100 & 6.2868 & 573.67  & 696.73  & 801.88  & 716.42  \\
+200 & 5.9216 & 411.98  & 554.66  & 645.45  & 569.12  \\
+300 & 5.7691 & 290.08  & 462.50  & 543.28  & 481.75  \\
+400 & 5.3495 & 212.91  & 400.33  & 491.96  & 436.82  \\
+500 & 5.0014 & 162.97  & 375.02  & 476.34  & 414.64  \\
+\hline
+\end{tabular}}
+\end{table}
+
+\section*{Part 3: Architectural Exploration (Local Window Attention)}
+\noindent Here, we modify the standard full causal self attention mechanism to utilize local
+window attention instead, a form of sparse. The goal is to restrict each token's
+perspective to a fixed number of preceding tokens, which reduces computational cost
+and introduces an inductive bias that may be beneficial for certain types of data
+when involving short-range dependencies. The local window logic is implemented 
+by modifying the masking logic inside the self attention mechanism. The architecture
+of the decoder itself (embeddings, stacked Transformer blocks, feedfoward layers,
+residual connections, etc.) remains unchanged. Now, for a sequence of lenght $T$,
+the standard causal mask is a lower triangular matrix that allows position $i$
+to only attend to $\max{0, i-W+1} \dots i$, where $W$ is a hard coded window 
+size of 8 for our experiment. 
+
+\noindent We sanity test using the same two short and long sentences as before.
+
+\begin{center}
+\begin{longtable}{@{}p{0.49\linewidth}p{0.49\linewidth}@{}}
+\includegraphics[width=\linewidth]{../decoder_attn_maps/decoder_short_3_attention_map_1.png} &
+\includegraphics[width=\linewidth]{../decoder_attn_maps/decoder_short_3_attention_map_2.png} \\
+\includegraphics[width=\linewidth]{../decoder_attn_maps/decoder_short_3_attention_map_3.png} &
+\includegraphics[width=\linewidth]{../decoder_attn_maps/decoder_short_3_attention_map_4.png} \\
+\includegraphics[width=\linewidth]{../decoder_attn_maps/decoder_short_3_attention_map_5.png} &
+\includegraphics[width=\linewidth]{../decoder_attn_maps/decoder_short_3_attention_map_6.png} \\
+\includegraphics[width=\linewidth]{../decoder_attn_maps/decoder_short_3_attention_map_7.png} &
+\includegraphics[width=\linewidth]{../decoder_attn_maps/decoder_short_3_attention_map_8.png} \\
+\end{longtable}
+\end{center}
+
+\noindent As expected, we can see that each position only attends to itself and
+the preceding 7 tokens, leading to a banded attention pattern. The rightmost columns
+are again black due to the padding mask.
+
+\begin{center}
+\begin{longtable}{@{}p{0.49\linewidth}p{0.49\linewidth}@{}}
+\includegraphics[width=\linewidth]{../decoder_attn_maps/decoder_long_3_attention_map_1.png} &
+\includegraphics[width=\linewidth]{../decoder_attn_maps/decoder_long_3_attention_map_2.png} \\
+\includegraphics[width=\linewidth]{../decoder_attn_maps/decoder_long_3_attention_map_3.png} &
+\includegraphics[width=\linewidth]{../decoder_attn_maps/decoder_long_3_attention_map_4.png} \\
+\includegraphics[width=\linewidth]{../decoder_attn_maps/decoder_long_3_attention_map_5.png} &
+\includegraphics[width=\linewidth]{../decoder_attn_maps/decoder_long_3_attention_map_6.png} \\
+\includegraphics[width=\linewidth]{../decoder_attn_maps/decoder_long_3_attention_map_7.png} &
+\includegraphics[width=\linewidth]{../decoder_attn_maps/decoder_long_3_attention_map_8.png} \\
+\end{longtable}
+\end{center}
+
+\noindent As expected, we can see that the same banded attention pattern is 
+observed for the long sentence as well, and that the entire graph is filled 
+up to the block size limit of 32, confirming that the local window attention is
+properly implemented and the decoder is behaving as expected across different 
+input lengths.
+
+\vspace{1em}
+
+\noindent In order to compare our local window attention decoder with the standard
+full attention model, we train and test on the same datasets with the same hyperparameters.
+Likewise, we set the same random seeds for both models and load them with the same
+state dictionaries to ensure both models are training using the exact same batched
+dataset configurations. After training for 500 iterations, we obtain a final 
+training perplexity of 157.87, Obama perplexity of 368.99, W. Bush perplexity of 
+460.88, and H. Bush perpexlity of 402.49. Our results per every 100 iterations 
+are shown in the table below:
+
+\begin{table}[htbp]
+\centering
+\resizebox{\textwidth}{!}{
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+\textbf{Iter} & \textbf{Loss} & \textbf{Train PPL} & \textbf{Obama PPL} & \textbf{W. Bush PPL} & \textbf{H. Bush PPL} \\
+\hline
+1   & 8.8014 & 6519.03 & 6441.88 & 6619.83 & 6517.20 \\
+100 & 6.1430 & 565.46  & 694.25  & 802.84  & 712.15  \\
+200 & 6.1980 & 411.66  & 550.23  & 639.64  & 562.41  \\
+300 & 5.7195 & 286.04  & 458.59  & 542.92  & 471.55  \\
+400 & 5.3605 & 208.52  & 404.07  & 486.27  & 422.23  \\
+500 & 5.0922 & 157.87  & 368.99  & 460.88  & 402.49  \\
+\hline
+\end{tabular}}
+\end{table}
+
+\noindent Notice that the windowed attention model actually achieves lower perplexity
+across the board compared to the full attention model. There are a couple reasons
+of why this could occur. In a positive light, the local window attention forces 
+the model to focus on local syntax and shorter phrases, which is where most of the
+predictive power lies in analyzing speeches anyway. The full causal attention 
+also has a larger search space which could be noisier early as we are only training
+for 500 iterations. Secondly, local window attention is a form of inductive bias.
+The full attention model has more flexibility to learn long range dependencies, but
+can overfit for these long patterns in a small dataset. Windowing prevents this.
+However lastly, we can also attribute this performance difference due to the low
+number of training iterations and limited amount of training data in general,
+which may not be sufficient for the full attention model to learn, capping
+performance. With more training, the full attention model may eventually outperform
+the windowed attention model as it can learn to utilize long range dependencies, but
+with limited training, the windowed attention model may have an advantage due to its
+inductive bias and reduced search space.
 
 \end{document}
