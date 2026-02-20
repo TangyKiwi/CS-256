@@ -15,6 +15,13 @@ import argparse
 
 seed = 42
 
+torch.manual_seed(seed)
+if torch.cuda.is_available():
+    torch.cuda.manual_seed_all(seed)
+
+g = torch.Generator()
+g.manual_seed(seed)
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 """ Hyperparameters to use for training to roughly match 
@@ -127,7 +134,7 @@ def main():
                 num_layers=n_layer
             ).to(device)
     
-    if PART in ['test', '2', 'all']:
+    if PART in ['test', '2', '3', 'all']:
         decoder = TransformerDecoder(
                 vocab_size=tokenizer.vocab_size,
                 block_size=block_size,
@@ -148,6 +155,7 @@ def main():
             hidden_dim=n_hidden,
             window_size=window_size
         ).to(device)
+        decoder_3.load_state_dict(decoder.state_dict())  # Initialize with the same weights as the original decoder
 
     if PART in ['test', 'all']:
         sanity_sentence_short = "This is a test sentence for sanity check, it has almost thirty words in it to fill the majority of the attention map graph."
@@ -230,19 +238,19 @@ def main():
         with open(inputfile, 'r', encoding='utf-8') as f:
             lmtrainText = f.read()
         train_LM_dataset = LanguageModelingDataset(tokenizer, lmtrainText,  block_size)
-        train_LM_loader = DataLoader(train_LM_dataset, batch_size=batch_size, shuffle=True)
+        train_LM_loader = DataLoader(train_LM_dataset, batch_size=batch_size, shuffle=True, generator=g)
 
         def make_lm_loader(path):
             with open(path, 'r', encoding='utf-8') as f:
                 text = f.read()
             dataset = LanguageModelingDataset(tokenizer, text, block_size)
-            return DataLoader(dataset, batch_size=batch_size, shuffle=False)
+            return DataLoader(dataset, batch_size=batch_size, shuffle=False, generator=g)
 
         test_obama_loader = make_lm_loader("speechesdataset/test_LM_obama.txt")
         test_wbush_loader = make_lm_loader("speechesdataset/test_LM_wbush.txt")
         test_hbush_loader = make_lm_loader("speechesdataset/test_LM_hbush.txt")
 
-    if PART in ['2', 'all']:
+    if PART in ['2', '3', 'all']:
         lm_optimizer = torch.optim.Adam(decoder.parameters(), lr=learning_rate)
 
     if PART in ['3', 'all']:
@@ -311,7 +319,7 @@ def main():
         print(f"Final Train Accuracy: {final_train_acc:.2f}%")
         print(f"Final Test Accuracy: {final_test_acc:.2f}%")
 
-    if PART in ['2', 'all']:
+    if PART in ['2', '3', 'all']:
         t0 = time.perf_counter()
         iter_summaries = []
         # for the language modeling task, you will iterate over the training data for a fixed number of iterations like this:

@@ -244,6 +244,7 @@ class TransformerDecoder(nn.Module):
         loss = F.cross_entropy(
             logits.view(B * T, self.vocab_size),
             targets.view(B * T),
+            ignore_index=0
         )
 
         return loss
