@@ -32,11 +32,12 @@ python main.py --part 3
 ### Sanity Test Checks
 You can run all sanity test checks for parts 1, 2, and 3 by running:
 ```
-python main.py --part test
+python main.py --part pre-test|pro-test
 ```
 All output will go into the respective `encoder_attn_maps` or `decoder_attn_maps`
 folders with appropriate naming. Sanity test checks are done with a short sentence
-and a long sentence. 
+and a long sentence. `Pre-test` shows attention maps pre-training. `Pro-test` shows
+attention maps post-training.
 
 ### All
 You can run all parts + sanity test checks by running:
@@ -55,5 +56,6 @@ in the respective `encoder_attn_maps` or `decoder_attn_maps` directories, which
 are automatically created during runtime if the directory does not exist. Contains 
 `.png` files with a header of the model architecture `encoder` or `decoder`, followed
 by the sentence type tested `short` or `long`, with part 3 being distinguished
-with a `_3` footer. 8 attention maps are produced for each test, leading to 16
+with a `_3` footer. `pre` and `post` footers are also added depending on the time
+of the sanity check. 8 attention maps are produced for each test, leading to 16
 total per part.

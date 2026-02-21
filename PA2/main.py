@@ -114,18 +114,22 @@ def compute_perplexity(decoderLMmodel, data_loader, eval_iters=100):
 def main():
     # Set up argument parser
     parser = argparse.ArgumentParser(description='Run project assignment in parts or all.')
-    parser.add_argument('--part', type=str, required=True, help='Part to run (test, 1, 2, 3, all)')
+    parser.add_argument('--part', type=str, required=True, help='Part to run (pre-test, post-test, 1, 2, 3, all)')
 
     # Parse the command-line arguments
     args = parser.parse_args()
     PART = args.part
+
+    if PART not in ['pre-test', 'post-test', '1', '2', '3', 'all']:
+        print("Invalid part specified. Please choose from 'pre-test', 'post-test', '1', '2', '3', or 'all'.")
+        return
 
     print("Loading data and creating tokenizer ...")
     texts = load_texts('speechesdataset')
     tokenizer = SimpleTokenizer(' '.join(texts)) # create a tokenizer from the data
     print("Vocabulary size is", tokenizer.vocab_size)
 
-    if PART in ['test', '1', 'all']:
+    if PART in ['pre-test', 'post-test', '1', 'all']:
         encoder = TransformerEncoder(
                 vocab_size=tokenizer.vocab_size,
                 block_size=block_size,
@@ -134,7 +138,7 @@ def main():
                 num_layers=n_layer
             ).to(device)
     
-    if PART in ['test', '2', '3', 'all']:
+    if PART in ['pre-test', 'post-test', '2', '3', 'all']:
         decoder = TransformerDecoder(
                 vocab_size=tokenizer.vocab_size,
                 block_size=block_size,
@@ -144,7 +148,7 @@ def main():
                 hidden_dim=n_hidden
             ).to(device)
     
-    if PART in ['test', '3', 'all']:
+    if PART in ['pre-test', 'post-test', '3', 'all']:
         window_size = 8
         decoder_3 = TransformerDecoder(
             vocab_size=tokenizer.vocab_size,
@@ -157,7 +161,7 @@ def main():
         ).to(device)
         decoder_3.load_state_dict(decoder.state_dict())  # Initialize with the same weights as the original decoder
 
-    if PART in ['test', 'all']:
+    if PART in ['pre-test', 'all']:
         sanity_sentence_short = "This is a test sentence for sanity check, it has almost thirty words in it to fill the majority of the attention map graph."
         sanity_sentence_long = "This is a really long sentence that is meant to for the sanity test check, it has more than thirty two words in it so that we can see how the attention map looks when the sentence length exceeds the given block size."
         print("Running sanity checks for attention maps ...")
@@ -173,14 +177,14 @@ def main():
         utils.sanity_check(
             sanity_sentence_short, 
             block_size,
-            "short"
+            "short_pre"
         )
 
         print("Encoder Sanity Check Test w/ Long Sentence:")
         utils.sanity_check(
             sanity_sentence_long, 
             block_size,
-            "long"
+            "long_pre"
         )
 
         decoder.eval()
@@ -190,14 +194,14 @@ def main():
         utils.sanity_check(
             sanity_sentence_short, 
             block_size,
-            "short"
+            "short_pre"
         )
 
         print("Decoder Sanity Check Test w/ Long Sentence:")
         utils.sanity_check(
             sanity_sentence_long, 
             block_size,
-            "long"
+            "long_pre"
         )
 
         decoder_3.eval()
@@ -207,17 +211,17 @@ def main():
         utils.sanity_check(
             sanity_sentence_short, 
             block_size,
-            "short_3"
+            "short_pre_3"
         )
 
         print("Decoder w/ Local Window Attention Sanity Check Test w/ Long Sentence:")
         utils.sanity_check(
             sanity_sentence_long, 
             block_size,
-            "long_3"
+            "long_pre_3"
         )
 
-    if PART in ['1', 'all']:
+    if PART in ['post-test', '1', 'all']:
         train_CLS_dataset = SpeechesClassificationDataset(tokenizer, "speechesdataset/train_CLS.tsv")
         train_CLS_loader = DataLoader(train_CLS_dataset, batch_size=batch_size,collate_fn=collate_batch,shuffle=True)
         test_CLS_dataset = SpeechesClassificationDataset(tokenizer, "speechesdataset/test_CLS.tsv")
@@ -233,7 +237,7 @@ def main():
         criterion = nn.CrossEntropyLoss()
         optimizer = torch.optim.Adam(classifier.parameters(), lr=learning_rate)
         
-    if PART in ['2', '3', 'all']:
+    if PART in ['post-test', '2', '3', 'all']:
         inputfile = "speechesdataset/train_LM.txt"
         with open(inputfile, 'r', encoding='utf-8') as f:
             lmtrainText = f.read()
@@ -250,15 +254,15 @@ def main():
         test_wbush_loader = make_lm_loader("speechesdataset/test_LM_wbush.txt")
         test_hbush_loader = make_lm_loader("speechesdataset/test_LM_hbush.txt")
 
-    if PART in ['2', '3', 'all']:
+    if PART in ['post-test', '2', '3', 'all']:
         lm_optimizer = torch.optim.Adam(decoder.parameters(), lr=learning_rate)
 
-    if PART in ['3', 'all']:
+    if PART in ['post-test', '3', 'all']:
         lm_optimizer_3 = torch.optim.Adam(decoder_3.parameters(), lr=learning_rate)
 
      # for the classification  task, you will train for a fixed number of epochs like this:
 
-    if PART in ['1', 'all']:
+    if PART in ['post-test', '1', 'all']:
         epoch_summaries = []
         t0 = time.perf_counter()
         for epoch in range(epochs_CLS):
@@ -321,7 +325,7 @@ def main():
         print(f"Final Train Accuracy: {final_train_acc:.2f}%")
         print(f"Final Test Accuracy: {final_test_acc:.2f}%")
 
-    if PART in ['2', '3', 'all']:
+    if PART in ['post-test', '2', '3', 'all']:
         t0 = time.perf_counter()
         iter_summaries = []
         # for the language modeling task, you will iterate over the training data for a fixed number of iterations like this:
@@ -366,7 +370,7 @@ def main():
         print(f"Total Parameters in Decoder LM: {sum(p.numel() for p in decoder.parameters())}")
         print(f"Trainable Parameters in Decoder LM: {sum(p.numel() for p in decoder.parameters() if p.requires_grad)}")
 
-    if PART in ['3', 'all']:
+    if PART in ['post-test', '3', 'all']:
         t0 = time.perf_counter()
         iter_summaries = []
         # for the language modeling task, you will iterate over the training data for a fixed number of iterations like this:
@@ -410,6 +414,66 @@ def main():
         print(f"Final Test H. Bush Perplexity: {final_test_hbush_perplexity:.2f}")
         print(f"Total Parameters in Decoder LM: {sum(p.numel() for p in decoder_3.parameters())}")
         print(f"Trainable Parameters in Decoder LM: {sum(p.numel() for p in decoder_3.parameters() if p.requires_grad)}")
+
+    if PART in ['post-test', 'all']:
+        sanity_sentence_short = "This is a test sentence for sanity check, it has almost thirty words in it to fill the majority of the attention map graph."
+        sanity_sentence_long = "This is a really long sentence that is meant to for the sanity test check, it has more than thirty two words in it so that we can see how the attention map looks when the sentence length exceeds the given block size."
+        print("Running sanity checks for attention maps ...")
+        print("Sanity Check Test w/ Short Sentence:")
+        print(sanity_sentence_short)
+        print("Sanity Check Test w/ Long Sentence:")
+        print(sanity_sentence_long)
+
+        encoder.eval()
+        utils = Utilities(tokenizer, encoder)
+
+        print("Encoder Sanity Check Test w/ Short Sentence:")
+        utils.sanity_check(
+            sanity_sentence_short, 
+            block_size,
+            "short_post"
+        )
+
+        print("Encoder Sanity Check Test w/ Long Sentence:")
+        utils.sanity_check(
+            sanity_sentence_long, 
+            block_size,
+            "long_post"
+        )
+
+        decoder.eval()
+        utils = Utilities(tokenizer, decoder)
+
+        print("Decoder Sanity Check Test w/ Short Sentence:")
+        utils.sanity_check(
+            sanity_sentence_short, 
+            block_size,
+            "short_post"
+        )
+
+        print("Decoder Sanity Check Test w/ Long Sentence:")
+        utils.sanity_check(
+            sanity_sentence_long, 
+            block_size,
+            "long_post"
+        )
+
+        decoder_3.eval()
+        utils = Utilities(tokenizer, decoder_3)
+
+        print("Decoder w/ Local Window Attention Sanity Check Test w/ Short Sentence:")
+        utils.sanity_check(
+            sanity_sentence_short, 
+            block_size,
+            "short_post_3"
+        )
+
+        print("Decoder w/ Local Window Attention Sanity Check Test w/ Long Sentence:")
+        utils.sanity_check(
+            sanity_sentence_long, 
+            block_size,
+            "long_post_3"
+        )
 
 if __name__ == "__main__":
     main()
