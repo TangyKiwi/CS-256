@@ -1,0 +1,337 @@
+Requirement already satisfied: pydantic<2.12.4,>=2.7 in /usr/local/lib/python3.12/dist-packages (2.12.3)
+Requirement already satisfied: tenacity<10.0.0,>=9.0.0 in /usr/local/lib/python3.12/dist-packages (9.1.4)
+Requirement already satisfied: langchain>=0.3.27 in /usr/local/lib/python3.12/dist-packages (1.2.10)
+Collecting langchain-community>=0.3.31
+  Downloading langchain_community-0.4.1-py3-none-any.whl.metadata (3.0 kB)
+Requirement already satisfied: langchain-core>=0.3.83 in /usr/local/lib/python3.12/dist-packages (1.2.13)
+Collecting langchain-core>=0.3.83
+  Downloading langchain_core-1.2.14-py3-none-any.whl.metadata (4.4 kB)
+Collecting langchain_chroma
+  Downloading langchain_chroma-1.1.0-py3-none-any.whl.metadata (1.9 kB)
+Collecting langchain_huggingface
+  Downloading langchain_huggingface-1.2.0-py3-none-any.whl.metadata (2.8 kB)
+Requirement already satisfied: torch in /usr/local/lib/python3.12/dist-packages (2.10.0+cu128)
+Requirement already satisfied: transformers in /usr/local/lib/python3.12/dist-packages (5.0.0)
+Collecting transformers
+  Downloading transformers-5.2.0-py3-none-any.whl.metadata (32 kB)
+Collecting bitsandbytes
+  Downloading bitsandbytes-0.49.2-py3-none-manylinux_2_24_x86_64.whl.metadata (10 kB)
+Requirement already satisfied: sentence-transformers in /usr/local/lib/python3.12/dist-packages (5.2.3)
+Collecting pacmap
+  Downloading pacmap-0.8.0-py3-none-any.whl.metadata (14 kB)
+Requirement already satisfied: tqdm in /usr/local/lib/python3.12/dist-packages (4.67.3)
+Requirement already satisfied: matplotlib in /usr/local/lib/python3.12/dist-packages (3.10.0)
+Collecting matplotlib
+  Downloading matplotlib-3.10.8-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (52 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 52.8/52.8 kB 5.8 MB/s eta 0:00:00
+Collecting dataclasses-json
+  Downloading dataclasses_json-0.6.7-py3-none-any.whl.metadata (25 kB)
+Requirement already satisfied: gradio in /usr/local/lib/python3.12/dist-packages (5.50.0)
+Collecting gradio
+  Downloading gradio-6.6.0-py3-none-any.whl.metadata (16 kB)
+Requirement already satisfied: annotated-types>=0.6.0 in /usr/local/lib/python3.12/dist-packages (from pydantic<2.12.4,>=2.7) (0.7.0)
+Requirement already satisfied: pydantic-core==2.41.4 in /usr/local/lib/python3.12/dist-packages (from pydantic<2.12.4,>=2.7) (2.41.4)
+Requirement already satisfied: typing-extensions>=4.14.1 in /usr/local/lib/python3.12/dist-packages (from pydantic<2.12.4,>=2.7) (4.15.0)
+Requirement already satisfied: typing-inspection>=0.4.2 in /usr/local/lib/python3.12/dist-packages (from pydantic<2.12.4,>=2.7) (0.4.2)
+Requirement already satisfied: langgraph<1.1.0,>=1.0.8 in /usr/local/lib/python3.12/dist-packages (from langchain>=0.3.27) (1.0.8)
+Collecting langchain-classic<2.0.0,>=1.0.0 (from langchain-community>=0.3.31)
+  Downloading langchain_classic-1.0.1-py3-none-any.whl.metadata (4.2 kB)
+Requirement already satisfied: SQLAlchemy<3.0.0,>=1.4.0 in /usr/local/lib/python3.12/dist-packages (from langchain-community>=0.3.31) (2.0.46)
+Collecting requests<3.0.0,>=2.32.5 (from langchain-community>=0.3.31)
+  Downloading requests-2.32.5-py3-none-any.whl.metadata (4.9 kB)
+Requirement already satisfied: PyYAML<7.0.0,>=5.3.0 in /usr/local/lib/python3.12/dist-packages (from langchain-community>=0.3.31) (6.0.3)
+Requirement already satisfied: aiohttp<4.0.0,>=3.8.3 in /usr/local/lib/python3.12/dist-packages (from langchain-community>=0.3.31) (3.13.3)
+Requirement already satisfied: pydantic-settings<3.0.0,>=2.10.1 in /usr/local/lib/python3.12/dist-packages (from langchain-community>=0.3.31) (2.13.0)
+Requirement already satisfied: langsmith<1.0.0,>=0.1.125 in /usr/local/lib/python3.12/dist-packages (from langchain-community>=0.3.31) (0.7.3)
+Requirement already satisfied: httpx-sse<1.0.0,>=0.4.0 in /usr/local/lib/python3.12/dist-packages (from langchain-community>=0.3.31) (0.4.3)
+Requirement already satisfied: numpy>=1.26.2 in /usr/local/lib/python3.12/dist-packages (from langchain-community>=0.3.31) (2.0.2)
+Requirement already satisfied: jsonpatch<2.0.0,>=1.33.0 in /usr/local/lib/python3.12/dist-packages (from langchain-core>=0.3.83) (1.33)
+Requirement already satisfied: packaging>=23.2.0 in /usr/local/lib/python3.12/dist-packages (from langchain-core>=0.3.83) (26.0)
+Requirement already satisfied: uuid-utils<1.0,>=0.12.0 in /usr/local/lib/python3.12/dist-packages (from langchain-core>=0.3.83) (0.14.0)
+Collecting chromadb<2.0.0,>=1.3.5 (from langchain_chroma)
+  Downloading chromadb-1.5.1-cp39-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (7.2 kB)
+Collecting huggingface-hub<1.0.0,>=0.33.4 (from langchain_huggingface)
+  Downloading huggingface_hub-0.36.2-py3-none-any.whl.metadata (15 kB)
+Requirement already satisfied: tokenizers<1.0.0,>=0.19.1 in /usr/local/lib/python3.12/dist-packages (from langchain_huggingface) (0.22.2)
+Requirement already satisfied: filelock in /usr/local/lib/python3.12/dist-packages (from torch) (3.24.2)
+Requirement already satisfied: setuptools in /usr/local/lib/python3.12/dist-packages (from torch) (75.2.0)
+Requirement already satisfied: sympy>=1.13.3 in /usr/local/lib/python3.12/dist-packages (from torch) (1.14.0)
+Requirement already satisfied: networkx>=2.5.1 in /usr/local/lib/python3.12/dist-packages (from torch) (3.6.1)
+Requirement already satisfied: jinja2 in /usr/local/lib/python3.12/dist-packages (from torch) (3.1.6)
+Requirement already satisfied: fsspec>=0.8.5 in /usr/local/lib/python3.12/dist-packages (from torch) (2025.3.0)
+Requirement already satisfied: cuda-bindings==12.9.4 in /usr/local/lib/python3.12/dist-packages (from torch) (12.9.4)
+Requirement already satisfied: nvidia-cuda-nvrtc-cu12==12.8.93 in /usr/local/lib/python3.12/dist-packages (from torch) (12.8.93)
+Requirement already satisfied: nvidia-cuda-runtime-cu12==12.8.90 in /usr/local/lib/python3.12/dist-packages (from torch) (12.8.90)
+Requirement already satisfied: nvidia-cuda-cupti-cu12==12.8.90 in /usr/local/lib/python3.12/dist-packages (from torch) (12.8.90)
+Requirement already satisfied: nvidia-cudnn-cu12==9.10.2.21 in /usr/local/lib/python3.12/dist-packages (from torch) (9.10.2.21)
+Requirement already satisfied: nvidia-cublas-cu12==12.8.4.1 in /usr/local/lib/python3.12/dist-packages (from torch) (12.8.4.1)
+Requirement already satisfied: nvidia-cufft-cu12==11.3.3.83 in /usr/local/lib/python3.12/dist-packages (from torch) (11.3.3.83)
+Requirement already satisfied: nvidia-curand-cu12==10.3.9.90 in /usr/local/lib/python3.12/dist-packages (from torch) (10.3.9.90)
+Requirement already satisfied: nvidia-cusolver-cu12==11.7.3.90 in /usr/local/lib/python3.12/dist-packages (from torch) (11.7.3.90)
+Requirement already satisfied: nvidia-cusparse-cu12==12.5.8.93 in /usr/local/lib/python3.12/dist-packages (from torch) (12.5.8.93)
+Requirement already satisfied: nvidia-cusparselt-cu12==0.7.1 in /usr/local/lib/python3.12/dist-packages (from torch) (0.7.1)
+Requirement already satisfied: nvidia-nccl-cu12==2.27.5 in /usr/local/lib/python3.12/dist-packages (from torch) (2.27.5)
+Requirement already satisfied: nvidia-nvshmem-cu12==3.4.5 in /usr/local/lib/python3.12/dist-packages (from torch) (3.4.5)
+Requirement already satisfied: nvidia-nvtx-cu12==12.8.90 in /usr/local/lib/python3.12/dist-packages (from torch) (12.8.90)
+Requirement already satisfied: nvidia-nvjitlink-cu12==12.8.93 in /usr/local/lib/python3.12/dist-packages (from torch) (12.8.93)
+Requirement already satisfied: nvidia-cufile-cu12==1.13.1.3 in /usr/local/lib/python3.12/dist-packages (from torch) (1.13.1.3)
+Requirement already satisfied: triton==3.6.0 in /usr/local/lib/python3.12/dist-packages (from torch) (3.6.0)
+Requirement already satisfied: cuda-pathfinder~=1.1 in /usr/local/lib/python3.12/dist-packages (from cuda-bindings==12.9.4->torch) (1.3.4)
+INFO: pip is looking at multiple versions of transformers to determine which version is compatible with other requirements. This could take a while.
+Collecting transformers
+  Downloading transformers-5.1.0-py3-none-any.whl.metadata (31 kB)
+  Downloading transformers-5.0.0-py3-none-any.whl.metadata (37 kB)
+  Downloading transformers-4.57.6-py3-none-any.whl.metadata (43 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 44.0/44.0 kB 4.8 MB/s eta 0:00:00
+Requirement already satisfied: regex!=2019.12.17 in /usr/local/lib/python3.12/dist-packages (from transformers) (2025.11.3)
+Requirement already satisfied: safetensors>=0.4.3 in /usr/local/lib/python3.12/dist-packages (from transformers) (0.7.0)
+Requirement already satisfied: scikit-learn in /usr/local/lib/python3.12/dist-packages (from sentence-transformers) (1.6.1)
+Requirement already satisfied: scipy in /usr/local/lib/python3.12/dist-packages (from sentence-transformers) (1.16.3)
+Requirement already satisfied: numba>=0.57 in /usr/local/lib/python3.12/dist-packages (from pacmap) (0.60.0)
+Collecting annoy>=1.11 (from pacmap)
+  Downloading annoy-1.17.3.tar.gz (647 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 647.5/647.5 kB 30.1 MB/s eta 0:00:00
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Requirement already satisfied: contourpy>=1.0.1 in /usr/local/lib/python3.12/dist-packages (from matplotlib) (1.3.3)
+Requirement already satisfied: cycler>=0.10 in /usr/local/lib/python3.12/dist-packages (from matplotlib) (0.12.1)
+Requirement already satisfied: fonttools>=4.22.0 in /usr/local/lib/python3.12/dist-packages (from matplotlib) (4.61.1)
+Requirement already satisfied: kiwisolver>=1.3.1 in /usr/local/lib/python3.12/dist-packages (from matplotlib) (1.4.9)
+Requirement already satisfied: pillow>=8 in /usr/local/lib/python3.12/dist-packages (from matplotlib) (11.3.0)
+Requirement already satisfied: pyparsing>=3 in /usr/local/lib/python3.12/dist-packages (from matplotlib) (3.3.2)
+Requirement already satisfied: python-dateutil>=2.7 in /usr/local/lib/python3.12/dist-packages (from matplotlib) (2.9.0.post0)
+Collecting marshmallow<4.0.0,>=3.18.0 (from dataclasses-json)
+  Downloading marshmallow-3.26.2-py3-none-any.whl.metadata (7.3 kB)
+Collecting typing-inspect<1,>=0.4.0 (from dataclasses-json)
+  Downloading typing_inspect-0.9.0-py3-none-any.whl.metadata (1.5 kB)
+Requirement already satisfied: aiofiles<25.0,>=22.0 in /usr/local/lib/python3.12/dist-packages (from gradio) (24.1.0)
+Requirement already satisfied: anyio<5.0,>=3.0 in /usr/local/lib/python3.12/dist-packages (from gradio) (4.12.1)
+Requirement already satisfied: brotli>=1.1.0 in /usr/local/lib/python3.12/dist-packages (from gradio) (1.2.0)
+Requirement already satisfied: fastapi<1.0,>=0.115.2 in /usr/local/lib/python3.12/dist-packages (from gradio) (0.129.0)
+Requirement already satisfied: ffmpy in /usr/local/lib/python3.12/dist-packages (from gradio) (1.0.0)
+Collecting gradio-client==2.1.0 (from gradio)
+  Downloading gradio_client-2.1.0-py3-none-any.whl.metadata (7.1 kB)
+Requirement already satisfied: groovy~=0.1 in /usr/local/lib/python3.12/dist-packages (from gradio) (0.1.2)
+Requirement already satisfied: httpx<1.0,>=0.24.1 in /usr/local/lib/python3.12/dist-packages (from gradio) (0.28.1)
+Requirement already satisfied: markupsafe<4.0,>=2.0 in /usr/local/lib/python3.12/dist-packages (from gradio) (3.0.3)
+Requirement already satisfied: orjson~=3.0 in /usr/local/lib/python3.12/dist-packages (from gradio) (3.11.7)
+Requirement already satisfied: pandas<4.0,>=1.0 in /usr/local/lib/python3.12/dist-packages (from gradio) (2.2.2)
+Requirement already satisfied: pydub in /usr/local/lib/python3.12/dist-packages (from gradio) (0.25.1)
+Requirement already satisfied: python-multipart>=0.0.18 in /usr/local/lib/python3.12/dist-packages (from gradio) (0.0.22)
+Requirement already satisfied: pytz>=2017.2 in /usr/local/lib/python3.12/dist-packages (from gradio) (2025.2)
+Requirement already satisfied: safehttpx<0.2.0,>=0.1.7 in /usr/local/lib/python3.12/dist-packages (from gradio) (0.1.7)
+Requirement already satisfied: semantic-version~=2.0 in /usr/local/lib/python3.12/dist-packages (from gradio) (2.10.0)
+Requirement already satisfied: starlette<1.0,>=0.40.0 in /usr/local/lib/python3.12/dist-packages (from gradio) (0.52.1)
+Requirement already satisfied: tomlkit<0.14.0,>=0.12.0 in /usr/local/lib/python3.12/dist-packages (from gradio) (0.13.3)
+Requirement already satisfied: typer<1.0,>=0.12 in /usr/local/lib/python3.12/dist-packages (from gradio) (0.24.0)
+Requirement already satisfied: uvicorn>=0.14.0 in /usr/local/lib/python3.12/dist-packages (from gradio) (0.41.0)
+Requirement already satisfied: aiohappyeyeballs>=2.5.0 in /usr/local/lib/python3.12/dist-packages (from aiohttp<4.0.0,>=3.8.3->langchain-community>=0.3.31) (2.6.1)
+Requirement already satisfied: aiosignal>=1.4.0 in /usr/local/lib/python3.12/dist-packages (from aiohttp<4.0.0,>=3.8.3->langchain-community>=0.3.31) (1.4.0)
+Requirement already satisfied: attrs>=17.3.0 in /usr/local/lib/python3.12/dist-packages (from aiohttp<4.0.0,>=3.8.3->langchain-community>=0.3.31) (25.4.0)
+Requirement already satisfied: frozenlist>=1.1.1 in /usr/local/lib/python3.12/dist-packages (from aiohttp<4.0.0,>=3.8.3->langchain-community>=0.3.31) (1.8.0)
+Requirement already satisfied: multidict<7.0,>=4.5 in /usr/local/lib/python3.12/dist-packages (from aiohttp<4.0.0,>=3.8.3->langchain-community>=0.3.31) (6.7.1)
+Requirement already satisfied: propcache>=0.2.0 in /usr/local/lib/python3.12/dist-packages (from aiohttp<4.0.0,>=3.8.3->langchain-community>=0.3.31) (0.4.1)
+Requirement already satisfied: yarl<2.0,>=1.17.0 in /usr/local/lib/python3.12/dist-packages (from aiohttp<4.0.0,>=3.8.3->langchain-community>=0.3.31) (1.22.0)
+Requirement already satisfied: idna>=2.8 in /usr/local/lib/python3.12/dist-packages (from anyio<5.0,>=3.0->gradio) (3.11)
+Collecting build>=1.0.3 (from chromadb<2.0.0,>=1.3.5->langchain_chroma)
+  Downloading build-1.4.0-py3-none-any.whl.metadata (5.8 kB)
+Collecting pybase64>=1.4.1 (from chromadb<2.0.0,>=1.3.5->langchain_chroma)
+  Downloading pybase64-1.4.3-cp312-cp312-manylinux1_x86_64.manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_5_x86_64.whl.metadata (8.7 kB)
+Collecting posthog<6.0.0,>=2.4.0 (from chromadb<2.0.0,>=1.3.5->langchain_chroma)
+  Downloading posthog-5.4.0-py3-none-any.whl.metadata (5.7 kB)
+Collecting onnxruntime>=1.14.1 (from chromadb<2.0.0,>=1.3.5->langchain_chroma)
+  Downloading onnxruntime-1.24.2-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (5.0 kB)
+Requirement already satisfied: opentelemetry-api>=1.2.0 in /usr/local/lib/python3.12/dist-packages (from chromadb<2.0.0,>=1.3.5->langchain_chroma) (1.38.0)
+Collecting opentelemetry-exporter-otlp-proto-grpc>=1.2.0 (from chromadb<2.0.0,>=1.3.5->langchain_chroma)
+  Downloading opentelemetry_exporter_otlp_proto_grpc-1.39.1-py3-none-any.whl.metadata (2.5 kB)
+Requirement already satisfied: opentelemetry-sdk>=1.2.0 in /usr/local/lib/python3.12/dist-packages (from chromadb<2.0.0,>=1.3.5->langchain_chroma) (1.38.0)
+Collecting pypika>=0.48.9 (from chromadb<2.0.0,>=1.3.5->langchain_chroma)
+  Downloading pypika-0.51.1-py2.py3-none-any.whl.metadata (51 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 52.0/52.0 kB 6.2 MB/s eta 0:00:00
+Requirement already satisfied: overrides>=7.3.1 in /usr/local/lib/python3.12/dist-packages (from chromadb<2.0.0,>=1.3.5->langchain_chroma) (7.7.0)
+Requirement already satisfied: importlib-resources in /usr/local/lib/python3.12/dist-packages (from chromadb<2.0.0,>=1.3.5->langchain_chroma) (6.5.2)
+Requirement already satisfied: grpcio>=1.58.0 in /usr/local/lib/python3.12/dist-packages (from chromadb<2.0.0,>=1.3.5->langchain_chroma) (1.78.0)
+Collecting bcrypt>=4.0.1 (from chromadb<2.0.0,>=1.3.5->langchain_chroma)
+  Downloading bcrypt-5.0.0-cp39-abi3-manylinux_2_34_x86_64.whl.metadata (10 kB)
+Collecting kubernetes>=28.1.0 (from chromadb<2.0.0,>=1.3.5->langchain_chroma)
+  Downloading kubernetes-35.0.0-py2.py3-none-any.whl.metadata (1.7 kB)
+Requirement already satisfied: mmh3>=4.0.1 in /usr/local/lib/python3.12/dist-packages (from chromadb<2.0.0,>=1.3.5->langchain_chroma) (5.2.0)
+Requirement already satisfied: rich>=10.11.0 in /usr/local/lib/python3.12/dist-packages (from chromadb<2.0.0,>=1.3.5->langchain_chroma) (13.9.4)
+Requirement already satisfied: jsonschema>=4.19.0 in /usr/local/lib/python3.12/dist-packages (from chromadb<2.0.0,>=1.3.5->langchain_chroma) (4.26.0)
+Requirement already satisfied: annotated-doc>=0.0.2 in /usr/local/lib/python3.12/dist-packages (from fastapi<1.0,>=0.115.2->gradio) (0.0.4)
+Requirement already satisfied: certifi in /usr/local/lib/python3.12/dist-packages (from httpx<1.0,>=0.24.1->gradio) (2026.1.4)
+Requirement already satisfied: httpcore==1.* in /usr/local/lib/python3.12/dist-packages (from httpx<1.0,>=0.24.1->gradio) (1.0.9)
+Requirement already satisfied: h11>=0.16 in /usr/local/lib/python3.12/dist-packages (from httpcore==1.*->httpx<1.0,>=0.24.1->gradio) (0.16.0)
+Requirement already satisfied: hf-xet<2.0.0,>=1.1.3 in /usr/local/lib/python3.12/dist-packages (from huggingface-hub<1.0.0,>=0.33.4->langchain_huggingface) (1.2.0)
+Requirement already satisfied: jsonpointer>=1.9 in /usr/local/lib/python3.12/dist-packages (from jsonpatch<2.0.0,>=1.33.0->langchain-core>=0.3.83) (3.0.0)
+Collecting langchain-text-splitters<2.0.0,>=1.1.0 (from langchain-classic<2.0.0,>=1.0.0->langchain-community>=0.3.31)
+  Downloading langchain_text_splitters-1.1.1-py3-none-any.whl.metadata (3.3 kB)
+Requirement already satisfied: langgraph-checkpoint<5.0.0,>=2.1.0 in /usr/local/lib/python3.12/dist-packages (from langgraph<1.1.0,>=1.0.8->langchain>=0.3.27) (4.0.0)
+Requirement already satisfied: langgraph-prebuilt<1.1.0,>=1.0.7 in /usr/local/lib/python3.12/dist-packages (from langgraph<1.1.0,>=1.0.8->langchain>=0.3.27) (1.0.7)
+Requirement already satisfied: langgraph-sdk<0.4.0,>=0.3.0 in /usr/local/lib/python3.12/dist-packages (from langgraph<1.1.0,>=1.0.8->langchain>=0.3.27) (0.3.6)
+Requirement already satisfied: xxhash>=3.5.0 in /usr/local/lib/python3.12/dist-packages (from langgraph<1.1.0,>=1.0.8->langchain>=0.3.27) (3.6.0)
+Requirement already satisfied: requests-toolbelt>=1.0.0 in /usr/local/lib/python3.12/dist-packages (from langsmith<1.0.0,>=0.1.125->langchain-community>=0.3.31) (1.0.0)
+Requirement already satisfied: zstandard>=0.23.0 in /usr/local/lib/python3.12/dist-packages (from langsmith<1.0.0,>=0.1.125->langchain-community>=0.3.31) (0.25.0)
+Requirement already satisfied: llvmlite<0.44,>=0.43.0dev0 in /usr/local/lib/python3.12/dist-packages (from numba>=0.57->pacmap) (0.43.0)
+Requirement already satisfied: tzdata>=2022.7 in /usr/local/lib/python3.12/dist-packages (from pandas<4.0,>=1.0->gradio) (2025.3)
+Requirement already satisfied: python-dotenv>=0.21.0 in /usr/local/lib/python3.12/dist-packages (from pydantic-settings<3.0.0,>=2.10.1->langchain-community>=0.3.31) (1.2.1)
+Requirement already satisfied: six>=1.5 in /usr/local/lib/python3.12/dist-packages (from python-dateutil>=2.7->matplotlib) (1.17.0)
+Requirement already satisfied: charset_normalizer<4,>=2 in /usr/local/lib/python3.12/dist-packages (from requests<3.0.0,>=2.32.5->langchain-community>=0.3.31) (3.4.4)
+Requirement already satisfied: urllib3<3,>=1.21.1 in /usr/local/lib/python3.12/dist-packages (from requests<3.0.0,>=2.32.5->langchain-community>=0.3.31) (2.5.0)
+Requirement already satisfied: joblib>=1.2.0 in /usr/local/lib/python3.12/dist-packages (from scikit-learn->sentence-transformers) (1.5.3)
+Requirement already satisfied: threadpoolctl>=3.1.0 in /usr/local/lib/python3.12/dist-packages (from scikit-learn->sentence-transformers) (3.6.0)
+Requirement already satisfied: greenlet>=1 in /usr/local/lib/python3.12/dist-packages (from SQLAlchemy<3.0.0,>=1.4.0->langchain-community>=0.3.31) (3.3.1)
+Requirement already satisfied: mpmath<1.4,>=1.1.0 in /usr/local/lib/python3.12/dist-packages (from sympy>=1.13.3->torch) (1.3.0)
+Requirement already satisfied: click>=8.2.1 in /usr/local/lib/python3.12/dist-packages (from typer<1.0,>=0.12->gradio) (8.3.1)
+Requirement already satisfied: shellingham>=1.3.0 in /usr/local/lib/python3.12/dist-packages (from typer<1.0,>=0.12->gradio) (1.5.4)
+Collecting mypy-extensions>=0.3.0 (from typing-inspect<1,>=0.4.0->dataclasses-json)
+  Downloading mypy_extensions-1.1.0-py3-none-any.whl.metadata (1.1 kB)
+Collecting pyproject_hooks (from build>=1.0.3->chromadb<2.0.0,>=1.3.5->langchain_chroma)
+  Downloading pyproject_hooks-1.2.0-py3-none-any.whl.metadata (1.3 kB)
+Requirement already satisfied: jsonschema-specifications>=2023.03.6 in /usr/local/lib/python3.12/dist-packages (from jsonschema>=4.19.0->chromadb<2.0.0,>=1.3.5->langchain_chroma) (2025.9.1)
+Requirement already satisfied: referencing>=0.28.4 in /usr/local/lib/python3.12/dist-packages (from jsonschema>=4.19.0->chromadb<2.0.0,>=1.3.5->langchain_chroma) (0.37.0)
+Requirement already satisfied: rpds-py>=0.25.0 in /usr/local/lib/python3.12/dist-packages (from jsonschema>=4.19.0->chromadb<2.0.0,>=1.3.5->langchain_chroma) (0.30.0)
+Requirement already satisfied: websocket-client!=0.40.0,!=0.41.*,!=0.42.*,>=0.32.0 in /usr/local/lib/python3.12/dist-packages (from kubernetes>=28.1.0->chromadb<2.0.0,>=1.3.5->langchain_chroma) (1.9.0)
+Requirement already satisfied: requests-oauthlib in /usr/local/lib/python3.12/dist-packages (from kubernetes>=28.1.0->chromadb<2.0.0,>=1.3.5->langchain_chroma) (2.0.0)
+Collecting durationpy>=0.7 (from kubernetes>=28.1.0->chromadb<2.0.0,>=1.3.5->langchain_chroma)
+  Downloading durationpy-0.10-py3-none-any.whl.metadata (340 bytes)
+Requirement already satisfied: ormsgpack>=1.12.0 in /usr/local/lib/python3.12/dist-packages (from langgraph-checkpoint<5.0.0,>=2.1.0->langgraph<1.1.0,>=1.0.8->langchain>=0.3.27) (1.12.2)
+Requirement already satisfied: flatbuffers in /usr/local/lib/python3.12/dist-packages (from onnxruntime>=1.14.1->chromadb<2.0.0,>=1.3.5->langchain_chroma) (25.12.19)
+Requirement already satisfied: protobuf in /usr/local/lib/python3.12/dist-packages (from onnxruntime>=1.14.1->chromadb<2.0.0,>=1.3.5->langchain_chroma) (5.29.6)
+Requirement already satisfied: importlib-metadata<8.8.0,>=6.0 in /usr/local/lib/python3.12/dist-packages (from opentelemetry-api>=1.2.0->chromadb<2.0.0,>=1.3.5->langchain_chroma) (8.7.1)
+Requirement already satisfied: googleapis-common-protos~=1.57 in /usr/local/lib/python3.12/dist-packages (from opentelemetry-exporter-otlp-proto-grpc>=1.2.0->chromadb<2.0.0,>=1.3.5->langchain_chroma) (1.72.0)
+Collecting opentelemetry-exporter-otlp-proto-common==1.39.1 (from opentelemetry-exporter-otlp-proto-grpc>=1.2.0->chromadb<2.0.0,>=1.3.5->langchain_chroma)
+  Downloading opentelemetry_exporter_otlp_proto_common-1.39.1-py3-none-any.whl.metadata (1.8 kB)
+Collecting opentelemetry-proto==1.39.1 (from opentelemetry-exporter-otlp-proto-grpc>=1.2.0->chromadb<2.0.0,>=1.3.5->langchain_chroma)
+  Downloading opentelemetry_proto-1.39.1-py3-none-any.whl.metadata (2.3 kB)
+Collecting opentelemetry-sdk>=1.2.0 (from chromadb<2.0.0,>=1.3.5->langchain_chroma)
+  Downloading opentelemetry_sdk-1.39.1-py3-none-any.whl.metadata (1.5 kB)
+Collecting opentelemetry-api>=1.2.0 (from chromadb<2.0.0,>=1.3.5->langchain_chroma)
+  Downloading opentelemetry_api-1.39.1-py3-none-any.whl.metadata (1.5 kB)
+Collecting opentelemetry-semantic-conventions==0.60b1 (from opentelemetry-sdk>=1.2.0->chromadb<2.0.0,>=1.3.5->langchain_chroma)
+  Downloading opentelemetry_semantic_conventions-0.60b1-py3-none-any.whl.metadata (2.4 kB)
+Collecting backoff>=1.10.0 (from posthog<6.0.0,>=2.4.0->chromadb<2.0.0,>=1.3.5->langchain_chroma)
+  Downloading backoff-2.2.1-py3-none-any.whl.metadata (14 kB)
+Requirement already satisfied: distro>=1.5.0 in /usr/local/lib/python3.12/dist-packages (from posthog<6.0.0,>=2.4.0->chromadb<2.0.0,>=1.3.5->langchain_chroma) (1.9.0)
+Requirement already satisfied: markdown-it-py>=2.2.0 in /usr/local/lib/python3.12/dist-packages (from rich>=10.11.0->chromadb<2.0.0,>=1.3.5->langchain_chroma) (4.0.0)
+Requirement already satisfied: pygments<3.0.0,>=2.13.0 in /usr/local/lib/python3.12/dist-packages (from rich>=10.11.0->chromadb<2.0.0,>=1.3.5->langchain_chroma) (2.19.2)
+Requirement already satisfied: httptools>=0.6.3 in /usr/local/lib/python3.12/dist-packages (from uvicorn[standard]>=0.18.3->chromadb<2.0.0,>=1.3.5->langchain_chroma) (0.7.1)
+Requirement already satisfied: uvloop>=0.15.1 in /usr/local/lib/python3.12/dist-packages (from uvicorn[standard]>=0.18.3->chromadb<2.0.0,>=1.3.5->langchain_chroma) (0.22.1)
+Requirement already satisfied: watchfiles>=0.20 in /usr/local/lib/python3.12/dist-packages (from uvicorn[standard]>=0.18.3->chromadb<2.0.0,>=1.3.5->langchain_chroma) (1.1.1)
+Requirement already satisfied: websockets>=10.4 in /usr/local/lib/python3.12/dist-packages (from uvicorn[standard]>=0.18.3->chromadb<2.0.0,>=1.3.5->langchain_chroma) (15.0.1)
+Requirement already satisfied: zipp>=3.20 in /usr/local/lib/python3.12/dist-packages (from importlib-metadata<8.8.0,>=6.0->opentelemetry-api>=1.2.0->chromadb<2.0.0,>=1.3.5->langchain_chroma) (3.23.0)
+Requirement already satisfied: mdurl~=0.1 in /usr/local/lib/python3.12/dist-packages (from markdown-it-py>=2.2.0->rich>=10.11.0->chromadb<2.0.0,>=1.3.5->langchain_chroma) (0.1.2)
+Requirement already satisfied: oauthlib>=3.0.0 in /usr/local/lib/python3.12/dist-packages (from requests-oauthlib->kubernetes>=28.1.0->chromadb<2.0.0,>=1.3.5->langchain_chroma) (3.3.1)
+Downloading langchain_community-0.4.1-py3-none-any.whl (2.5 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.5/2.5 MB 93.2 MB/s eta 0:00:00
+Downloading langchain_core-1.2.14-py3-none-any.whl (501 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 501.4/501.4 kB 49.4 MB/s eta 0:00:00
+Downloading langchain_chroma-1.1.0-py3-none-any.whl (12 kB)
+Downloading langchain_huggingface-1.2.0-py3-none-any.whl (30 kB)
+Downloading transformers-4.57.6-py3-none-any.whl (12.0 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 12.0/12.0 MB 118.0 MB/s eta 0:00:00
+Downloading bitsandbytes-0.49.2-py3-none-manylinux_2_24_x86_64.whl (60.7 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 60.7/60.7 MB 12.0 MB/s eta 0:00:00
+Downloading pacmap-0.8.0-py3-none-any.whl (21 kB)
+Downloading matplotlib-3.10.8-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (8.7 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 8.7/8.7 MB 94.6 MB/s eta 0:00:00
+Downloading dataclasses_json-0.6.7-py3-none-any.whl (28 kB)
+Downloading gradio-6.6.0-py3-none-any.whl (24.2 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 24.2/24.2 MB 89.8 MB/s eta 0:00:00
+Downloading gradio_client-2.1.0-py3-none-any.whl (55 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 56.0/56.0 kB 6.7 MB/s eta 0:00:00
+Downloading chromadb-1.5.1-cp39-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (21.5 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 21.5/21.5 MB 96.1 MB/s eta 0:00:00
+Downloading huggingface_hub-0.36.2-py3-none-any.whl (566 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 566.4/566.4 kB 42.1 MB/s eta 0:00:00
+Downloading langchain_classic-1.0.1-py3-none-any.whl (1.0 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.0/1.0 MB 65.6 MB/s eta 0:00:00
+Downloading marshmallow-3.26.2-py3-none-any.whl (50 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 51.0/51.0 kB 6.3 MB/s eta 0:00:00
+Downloading requests-2.32.5-py3-none-any.whl (64 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 64.7/64.7 kB 8.1 MB/s eta 0:00:00
+Downloading typing_inspect-0.9.0-py3-none-any.whl (8.8 kB)
+Downloading bcrypt-5.0.0-cp39-abi3-manylinux_2_34_x86_64.whl (278 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 278.2/278.2 kB 33.1 MB/s eta 0:00:00
+Downloading build-1.4.0-py3-none-any.whl (24 kB)
+Downloading kubernetes-35.0.0-py2.py3-none-any.whl (2.0 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.0/2.0 MB 103.0 MB/s eta 0:00:00
+Downloading langchain_text_splitters-1.1.1-py3-none-any.whl (35 kB)
+Downloading mypy_extensions-1.1.0-py3-none-any.whl (5.0 kB)
+Downloading onnxruntime-1.24.2-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (17.1 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 17.1/17.1 MB 107.1 MB/s eta 0:00:00
+Downloading opentelemetry_exporter_otlp_proto_grpc-1.39.1-py3-none-any.whl (19 kB)
+Downloading opentelemetry_exporter_otlp_proto_common-1.39.1-py3-none-any.whl (18 kB)
+Downloading opentelemetry_proto-1.39.1-py3-none-any.whl (72 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 72.5/72.5 kB 9.2 MB/s eta 0:00:00
+Downloading opentelemetry_sdk-1.39.1-py3-none-any.whl (132 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 132.6/132.6 kB 17.7 MB/s eta 0:00:00
+Downloading opentelemetry_api-1.39.1-py3-none-any.whl (66 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 66.4/66.4 kB 8.6 MB/s eta 0:00:00
+Downloading opentelemetry_semantic_conventions-0.60b1-py3-none-any.whl (219 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 220.0/220.0 kB 25.6 MB/s eta 0:00:00
+Downloading posthog-5.4.0-py3-none-any.whl (105 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 105.4/105.4 kB 12.5 MB/s eta 0:00:00
+Downloading pybase64-1.4.3-cp312-cp312-manylinux1_x86_64.manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_5_x86_64.whl (71 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 71.6/71.6 kB 6.4 MB/s eta 0:00:00
+Downloading pypika-0.51.1-py2.py3-none-any.whl (60 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 60.6/60.6 kB 7.7 MB/s eta 0:00:00
+Downloading backoff-2.2.1-py3-none-any.whl (15 kB)
+Downloading durationpy-0.10-py3-none-any.whl (3.9 kB)
+Downloading pyproject_hooks-1.2.0-py3-none-any.whl (10 kB)
+Building wheels for collected packages: annoy
+  Building wheel for annoy (setup.py): started
+  Building wheel for annoy (setup.py): finished with status 'done'
+  Created wheel for annoy: filename=annoy-1.17.3-cp312-cp312-linux_x86_64.whl size=551806 sha256=cf276bbeca8e264209124abb31668066a354a1905c40349ee426831c32f923bd
+  Stored in directory: /root/.cache/pip/wheels/db/b9/53/a3b2d1fe1743abadddec6aa541294b24fdbc39d7800bc57311
+Successfully built annoy
+Installing collected packages: pypika, durationpy, annoy, requests, pyproject_hooks, pybase64, opentelemetry-proto, mypy-extensions, marshmallow, bcrypt, backoff, typing-inspect, posthog, opentelemetry-exporter-otlp-proto-common, opentelemetry-api, onnxruntime, matplotlib, huggingface-hub, build, pacmap, opentelemetry-semantic-conventions, kubernetes, gradio-client, dataclasses-json, transformers, opentelemetry-sdk, langchain-core, gradio, bitsandbytes, opentelemetry-exporter-otlp-proto-grpc, langchain-text-splitters, langchain_huggingface, langchain-classic, chromadb, langchain-community, langchain_chroma
+  Attempting uninstall: requests
+    Found existing installation: requests 2.32.4
+    Uninstalling requests-2.32.4:
+      Successfully uninstalled requests-2.32.4
+  Attempting uninstall: opentelemetry-proto
+    Found existing installation: opentelemetry-proto 1.38.0
+    Uninstalling opentelemetry-proto-1.38.0:
+      Successfully uninstalled opentelemetry-proto-1.38.0
+  Attempting uninstall: opentelemetry-exporter-otlp-proto-common
+    Found existing installation: opentelemetry-exporter-otlp-proto-common 1.38.0
+    Uninstalling opentelemetry-exporter-otlp-proto-common-1.38.0:
+      Successfully uninstalled opentelemetry-exporter-otlp-proto-common-1.38.0
+  Attempting uninstall: opentelemetry-api
+    Found existing installation: opentelemetry-api 1.38.0
+    Uninstalling opentelemetry-api-1.38.0:
+      Successfully uninstalled opentelemetry-api-1.38.0
+  Attempting uninstall: matplotlib
+    Found existing installation: matplotlib 3.10.0
+    Uninstalling matplotlib-3.10.0:
+      Successfully uninstalled matplotlib-3.10.0
+  Attempting uninstall: huggingface-hub
+    Found existing installation: huggingface_hub 1.4.1
+    Uninstalling huggingface_hub-1.4.1:
+      Successfully uninstalled huggingface_hub-1.4.1
+  Attempting uninstall: opentelemetry-semantic-conventions
+    Found existing installation: opentelemetry-semantic-conventions 0.59b0
+    Uninstalling opentelemetry-semantic-conventions-0.59b0:
+      Successfully uninstalled opentelemetry-semantic-conventions-0.59b0
+  Attempting uninstall: gradio-client
+    Found existing installation: gradio_client 1.14.0
+    Uninstalling gradio_client-1.14.0:
+      Successfully uninstalled gradio_client-1.14.0
+  Attempting uninstall: transformers
+    Found existing installation: transformers 5.0.0
+    Uninstalling transformers-5.0.0:
+      Successfully uninstalled transformers-5.0.0
+  Attempting uninstall: opentelemetry-sdk
+    Found existing installation: opentelemetry-sdk 1.38.0
+    Uninstalling opentelemetry-sdk-1.38.0:
+      Successfully uninstalled opentelemetry-sdk-1.38.0
+  Attempting uninstall: langchain-core
+    Found existing installation: langchain-core 1.2.13
+    Uninstalling langchain-core-1.2.13:
+      Successfully uninstalled langchain-core-1.2.13
+  Attempting uninstall: gradio
+    Found existing installation: gradio 5.50.0
+    Uninstalling gradio-5.50.0:
+      Successfully uninstalled gradio-5.50.0
+Successfully installed annoy-1.17.3 backoff-2.2.1 bcrypt-5.0.0 bitsandbytes-0.49.2 build-1.4.0 chromadb-1.5.1 dataclasses-json-0.6.7 durationpy-0.10 gradio-6.6.0 gradio-client-2.1.0 huggingface-hub-0.36.2 kubernetes-35.0.0 langchain-classic-1.0.1 langchain-community-0.4.1 langchain-core-1.2.14 langchain-text-splitters-1.1.1 langchain_chroma-1.1.0 langchain_huggingface-1.2.0 marshmallow-3.26.2 matplotlib-3.10.8 mypy-extensions-1.1.0 onnxruntime-1.24.2 opentelemetry-api-1.39.1 opentelemetry-exporter-otlp-proto-common-1.39.1 opentelemetry-exporter-otlp-proto-grpc-1.39.1 opentelemetry-proto-1.39.1 opentelemetry-sdk-1.39.1 opentelemetry-semantic-conventions-0.60b1 pacmap-0.8.0 posthog-5.4.0 pybase64-1.4.3 pypika-0.51.1 pyproject_hooks-1.2.0 requests-2.32.5 transformers-4.57.6 typing-inspect-0.9.0
